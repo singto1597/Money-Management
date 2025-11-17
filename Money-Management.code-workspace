@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"name": "Money-Management",
+			"path": "."
+		},
+		{
+			"name": "finance_management",
+			"path": "../../../../../mnt/STORAGE/Program_Project/finance_management"
+		},
+		{
+			"path": "../SQLite_project"
+		}
+	],
+	"settings": {}
+}
