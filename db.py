@@ -18,17 +18,18 @@ def initDB():
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS Categories(
                 category_id INTEGER PRIMARY KEY,
-                category_name TEXT
+                category_name TEXT,
+                category_type TEXT
                 );
                 ''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS Transactions(
                 transaction_id INTEGER PRIMARY KEY,
                 transaction_date DATETIME,
-                amount REAL,
                 description TEXT,
-                account_id INTEGER,
                 category_id INTEGER,
+                amount REAL,
+                account_id INTEGER,
                 transfer_group_id INTEGER
                 );
                 ''')
