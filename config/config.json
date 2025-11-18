@@ -21,7 +21,7 @@
       "tableName": "Transactions", 
       "columns": [
         {"variableName": "transaction_id", "variableType": "INTEGER PRIMARY KEY"},
-        {"variableName": "transaction_date", "variableType": "DATETIME"},
+        {"variableName": "transaction_date", "variableType": "TEXT"},
         {"variableName": "description", "variableType": "TEXT"},
         {"variableName": "category_id", "variableType": "INTEGER"},
         {"variableName": "amount", "variableType": "REAL"},

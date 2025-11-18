@@ -1,9 +1,7 @@
 import db
-import inital_db as initDB
-
+import initial_db as initDB
+import db_function as appDB
 
 initDB.initializeApp()
 
-db.deleteInfoIntoTable("Categories", "category_id = 1")
-# cursor.close()
-
+appDB.addTransaction("กินข้าว", "อาหาร", -100, "กระเป๋าตังค์", date_input = "2025-10-1 20:00:00")
