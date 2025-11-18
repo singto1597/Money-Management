@@ -1,0 +1,55 @@
+{
+  "tables": [ 
+    { 
+    "tableName": "Accounts", 
+      "columns": [
+        {"variableName": "account_id", "variableType": "INTEGER PRIMARY KEY"},
+        {"variableName": "account_name", "variableType": "TEXT"},
+        {"variableName": "account_type", "variableType": "TEXT"},
+        {"variableName": "initial_balance", "variableType": "REAL"}
+      ]
+    },
+    {
+      "tableName": "Categories", 
+      "columns": [
+        {"variableName": "category_id", "variableType": "INTEGER PRIMARY KEY"},
+        {"variableName": "category_name", "variableType": "TEXT UNIQUE"},
+        {"variableName": "category_type", "variableType": "TEXT"}
+      ]
+    },
+    {
+      "tableName": "Transactions", 
+      "columns": [
+        {"variableName": "transaction_id", "variableType": "INTEGER PRIMARY KEY"},
+        {"variableName": "transaction_date", "variableType": "DATETIME"},
+        {"variableName": "description", "variableType": "TEXT"},
+        {"variableName": "category_id", "variableType": "INTEGER"},
+        {"variableName": "amount", "variableType": "REAL"},
+        {"variableName": "account_id", "variableType": "INTEGER"},
+        {"variableName": "transfer_group_id", "variableType": "INTEGER"}
+      ]
+    }
+  ],
+
+
+  "default_categories": [
+    { "name": "อาหาร", "type": "expense" },
+    { "name": "วัตถุดิบ", "type": "expense" },
+    { "name": "ขนม", "type": "expense" },
+    { "name": "น้ำ", "type": "expense" },
+    { "name": "อุปกรณ์", "type": "expense" },
+    { "name": "เดินทาง", "type": "expense" },
+    { "name": "บันเทิง", "type": "expense" },
+    { "name": "อื่นๆ", "type": "expense" },
+
+    { "name": "เงินประจำวัน", "type": "income" },
+    { "name": "รายได้พิเศษ", "type": "income" },
+    { "name": "อื่นๆ", "type": "income" }
+  ],
+
+  "default_accounts": [
+    { "name": "กระเป๋าตังค์", "type": "wallet", "initial_balance": 0},
+    { "name": "ออมสิน", "type": "saving", "initial_balance": 0},
+    { "name": "ธนาคาร", "type": "saving", "initial_balance": 0}
+  ]
+}
