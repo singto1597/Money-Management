@@ -4,7 +4,7 @@
     "tableName": "Accounts", 
       "columns": [
         {"variableName": "account_id", "variableType": "INTEGER PRIMARY KEY"},
-        {"variableName": "account_name", "variableType": "TEXT"},
+        {"variableName": "account_name", "variableType": "TEXT UNIQUE"},
         {"variableName": "account_type", "variableType": "TEXT"},
         {"variableName": "initial_balance", "variableType": "REAL"}
       ]

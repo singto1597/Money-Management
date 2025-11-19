@@ -46,7 +46,6 @@ def addTransaction(description, category, amount, account, transfer_group_id = N
     if date_input is None:
         record_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     else:
-        # กรณีอยากย้อนอดีต ก็รับค่ามา (ต้อง format ให้ตรงนะ)
         record_time = date_input
 
     valueWillInsert = (record_time, description, category_id, amount, account_id, transfer_group_id)
