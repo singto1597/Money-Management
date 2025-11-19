@@ -1,7 +1,14 @@
 import sqlite3
+import os
 
 def connectToDatabase():
-    conn = sqlite3.connect("db/database.db")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, "db", "database.db")
+    
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row 
     return conn
 
 
@@ -50,38 +57,51 @@ def changeInfoIntoTable(tableName, tupleOfColumn_WillChange, tupleOfInfo_WillCha
     cursor.close()
     conn.close()
 
-def deleteInfoIntoTable(tableName,conditionOfColumn = None):
+
+def deleteInfoIntoTable(tableName, conditionOfColumn=None, conditionValues=None):
+    """
+    conditionOfColumn: เช่น "account_name = ?"
+    conditionValues: tuple ของค่าที่จะใส่ใน ? เช่น ("John's Wallet",)
+    """
     conn = connectToDatabase()
     cursor = conn.cursor()
     
     sqlCommand = f"DELETE FROM {tableName} "
-    if conditionOfColumn:
+    
+    if conditionOfColumn and conditionValues:
         sqlCommand += f" WHERE {conditionOfColumn}"
-    else:
-        print("Please input the condition!!")
+        cursor.execute(sqlCommand, conditionValues) 
+    else: 
+        print("Error: Condition is required for delete!")
         return
-    # print(sqlCommand)
-    cursor.execute(sqlCommand)
     
     conn.commit()
-
     cursor.close()
     conn.close()
 
-def getDB(tableName, column = "*", condition = None):
+
+
+
+
+def getDB(tableName, column="*", condition=None, conditionValues=None):
+
+    # id = ?
+    # conditionValues = 1
     conn = connectToDatabase()
     cursor = conn.cursor()
 
     sqlCommand = f"SELECT {column} FROM {tableName} "
 
-    if condition:
-        sqlCommand += f"WHERE {condition};"
+    if condition and conditionValues:
+        sqlCommand += f" WHERE {condition}"
+        cursor.execute(sqlCommand, conditionValues)
+    elif condition:
+        sqlCommand += f" WHERE {condition}"
+        cursor.execute(sqlCommand)
     else:
-        sqlCommand += ";"
+        cursor.execute(sqlCommand)
 
-    cursor.execute(sqlCommand)
-    result = cursor.fetchall()
-
+    result = [dict(row) for row in cursor.fetchall()]
 
     cursor.close()
     conn.close()

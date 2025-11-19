@@ -9,7 +9,7 @@ def addCategory(nameOfCategory, typeOfCategory):
 
 def deleteCategory(nameOfCategory):
     tableName = "Categories"
-    db.deleteInfoIntoTable(tableName, f'category_name = "{nameOfCategory}"')
+    db.deleteInfoIntoTable(tableName, "category_name = ?", (nameOfCategory,))
 
 
 def addAccount(nameOfAccount, typeOfAccount, initial_balance = 0):
@@ -20,7 +20,7 @@ def addAccount(nameOfAccount, typeOfAccount, initial_balance = 0):
 
 def deleteAccount(nameOfAccount):
     tableName = "Accounts"
-    db.deleteInfoIntoTable(tableName, f'account_name = "{nameOfAccount}"')
+    db.deleteInfoIntoTable(tableName, "account_name = ?", (nameOfAccount,))
 
 
 def addTransaction(description, category, amount, account, transfer_group_id = None, date_input = None):
@@ -28,16 +28,16 @@ def addTransaction(description, category, amount, account, transfer_group_id = N
 
     columnWillInsert = "(transaction_date, description, category_id, amount, account_id, transfer_group_id)"
     
-    raw_cat = db.getDB("Categories", "category_id", f'category_name = "{category}"')
+    raw_cat = db.getDB("Categories", "category_id", "category_name = ?", (category,))
     if raw_cat:
-        category_id = raw_cat[0][0]
+        category_id = raw_cat[0]['category_id']
     else:
         print(f"ไม่พบหมวดหมู่: {category}")
         return 
 
-    raw_acc = db.getDB("Accounts", "account_id", f'account_name = "{account}"')
+    raw_acc = db.getDB("Accounts", "account_id", "account_name = ?", (account,))
     if raw_acc:
-        account_id = raw_acc[0][0]
+        account_id = raw_acc[0]['account_id']
     else:
         print(f"ไม่พบกระเป๋า: {account}")
         return
