@@ -103,20 +103,21 @@ class TransactionFrame(ctk.CTkFrame):
             category_id = self.expense_map.get(category_name)
             amount_willChange_account = -amount
             
-        # print(f"Saving: Type={transaction_type}, AccID={account_id}, CatID={category_id}, Amt={amount}, desc={desc}")
-        db_func.addTransaction(description = desc, category_id = category_id, amount = amount, account_id = account_id)
-        db_func.changeBalanceInAccount(balance = self.acc_balance + amount_willChange_account, id = account_id)
+        db_func.addTransaction(description = desc, 
+                               category_id = category_id, 
+                               amount = amount, 
+                               account_id = account_id)
+        db_func.changeBalanceInAccount(balance = self.acc_balance + amount_willChange_account, 
+                                       id = account_id)
         
         current_balance = self.accounts_map_balance.get(account_name, 0)
         new_balance = current_balance + amount_willChange_account
         self.accounts_map_balance[account_name] = new_balance
         
         self.update_account_balance(account_name)
-        # print(account_name)
 
     def update_account_balance(self, choise):
         self.acc_balance = self.accounts_map_balance.get(choise, 0)
-        # test = self.acc_combo.get()
         self.acc_balance_label.configure(text=f"มีจำนวนเงิน {self.acc_balance}")
 
 
@@ -174,15 +175,16 @@ class TransferFrame(ctk.CTkFrame):
         if amount == 0: return
         if acc_from_name == acc_to_name: return
         print(f"โอน {amount} จาก {acc_from_name} -> {acc_to_name}")
+        db_func.transferMoney(amount = amount, 
+                              from_acc_id = self.accounts_map.get(acc_from_name), 
+                              to_acc_id = self.accounts_map.get(acc_to_name))
 
     def update_from_account_balance(self, choise):
         self.from_balance = self.accounts_map_balance.get(choise, 0)
-        # test = self.acc_combo.get()
         self.lbl_from_balance.configure(text=f"มีจำนวนเงิน {self.from_balance}")
 
     def update_to_account_balance(self, choise):
         self.to_balance = self.accounts_map_balance.get(choise, 0)
-        # test = self.acc_combo.get()
         self.lbl_to_balance.configure(text=f"มีจำนวนเงิน {self.to_balance}")
 
 class MainTabview(ctk.CTkTabview):

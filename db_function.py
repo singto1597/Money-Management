@@ -28,7 +28,7 @@ def changeValueInAccount(columnWillChange, valueWillChange, conditionOfColumn = 
 def changeBalanceInAccount(balance, id):
     changeValueInAccount(columnWillChange = "account_balance", valueWillChange = balance, conditionOfColumn = f"account_id = {id}")
 
-def addTransaction(description, category_id, amount, account_id, transfer_group_id = None, date_input = None):
+def addTransaction(description, category_id = None, amount = 0, account_id = None, transfer_group_id = None, date_input = None):
     tableName = "Transactions"
 
     columnWillInsert = "(transaction_date, description, category_id, amount, account_id, transfer_group_id)"
@@ -41,4 +41,20 @@ def addTransaction(description, category_id, amount, account_id, transfer_group_
     valueWillInsert = (record_time, description, category_id, amount, account_id, transfer_group_id)
     db.insertInfoIntoTable(tableName, columnWillInsert, valueWillInsert)
 
-# def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
+def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
+    accounts_map_balance = { row["account_id"]: row["account_balance"] for row in db.getDB("Accounts") }
+    from_acc_balance = accounts_map_balance[from_acc_id]
+    to_acc_balance = accounts_map_balance[to_acc_id]
+    addTransaction(description = desc, 
+                   amount = amount, 
+                   account_id = from_acc_id, 
+                   transfer_group_id = 0)
+    changeBalanceInAccount(balance = from_acc_balance - amount, 
+                           id = from_acc_id)
+    
+    addTransaction(description = desc, 
+                   amount = amount, 
+                   account_id = to_acc_id, 
+                   transfer_group_id = 0)
+    changeBalanceInAccount(balance = to_acc_balance + amount, 
+                           id = to_acc_id)
