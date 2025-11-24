@@ -87,6 +87,9 @@ class TransactionFrame(ctk.CTkFrame):
 
         if not amount:
             amount = 0
+        else:
+            amount = int(amount)
+
         if not desc:
             desc = transaction_type
 
@@ -99,6 +102,7 @@ class TransactionFrame(ctk.CTkFrame):
             category_id = self.expense_map.get(category_name)
             
         print(f"Saving: Type={transaction_type}, AccID={account_id}, CatID={category_id}, Amt={amount}, desc={desc}")
+    
     def update_account_balance(self, choise):
         acc_balance = self.accounts_map_balance.get(choise, 0)
         # test = self.acc_combo.get()
