@@ -45,14 +45,14 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
     accounts_map_balance = { row["account_id"]: row["account_balance"] for row in db.getDB("Accounts") }
     from_acc_balance = accounts_map_balance[from_acc_id]
     to_acc_balance = accounts_map_balance[to_acc_id]
-    addTransaction(description = desc, 
+    addTransaction(description = f"โอนไป {to_acc_id} ({desc})", 
                    amount = amount, 
                    account_id = from_acc_id, 
                    transfer_group_id = 0)
     changeBalanceInAccount(balance = from_acc_balance - amount, 
                            id = from_acc_id)
     
-    addTransaction(description = desc, 
+    addTransaction(description = f"ได้รับจาก {from_acc_id} ({desc})", 
                    amount = amount, 
                    account_id = to_acc_id, 
                    transfer_group_id = 0)
