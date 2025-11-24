@@ -28,24 +28,24 @@ def changeValueInAccount(columnWillChange, valueWillChange, conditionOfColumn = 
 def changeBalanceInAccount(balance, id):
     changeValueInAccount(columnWillChange = "account_balance", valueWillChange = balance, conditionOfColumn = f"account_id = {id}")
 
-def addTransaction(description, category, amount, account, transfer_group_id = None, date_input = None):
+def addTransaction(description, category_id, amount, account_id, transfer_group_id = None, date_input = None):
     tableName = "Transactions"
 
     columnWillInsert = "(transaction_date, description, category_id, amount, account_id, transfer_group_id)"
     
-    raw_cat = db.getDB("Categories", "category_id", "category_name = ?", (category,))
-    if raw_cat:
-        category_id = raw_cat[0]['category_id']
-    else:
-        print(f"ไม่พบหมวดหมู่: {category}")
-        return 
+    # raw_cat = db.getDB("Categories", "category_id", "category_name = ?", (category,))
+    # if raw_cat:
+    #     category_id = raw_cat[0]['category_id']
+    # else:
+    #     print(f"ไม่พบหมวดหมู่: {category}")
+    #     return 
 
-    raw_acc = db.getDB("Accounts", "account_id", "account_name = ?", (account,))
-    if raw_acc:
-        account_id = raw_acc[0]['account_id']
-    else:
-        print(f"ไม่พบกระเป๋า: {account}")
-        return
+    # raw_acc = db.getDB("Accounts", "account_id", "account_name = ?", (account,))
+    # if raw_acc:
+    #     account_id = raw_acc[0]['account_id']
+    # else:
+    #     print(f"ไม่พบกระเป๋า: {account}")
+    #     return
 
     
     if date_input is None:

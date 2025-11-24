@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import db
+import db_function as db_func
 
 class TransactionFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -93,20 +94,32 @@ class TransactionFrame(ctk.CTkFrame):
         if not desc:
             desc = transaction_type
 
+        amount_willChange_account = 0
         
         account_id = self.accounts_map.get(account_name)
         
         if transaction_type == "รายรับ":
             category_id = self.income_map.get(category_name)
+            amount_willChange_account = amount
         else:
             category_id = self.expense_map.get(category_name)
+            amount_willChange_account = -amount
             
-        print(f"Saving: Type={transaction_type}, AccID={account_id}, CatID={category_id}, Amt={amount}, desc={desc}")
-    
+        # print(f"Saving: Type={transaction_type}, AccID={account_id}, CatID={category_id}, Amt={amount}, desc={desc}")
+        db_func.addTransaction(description = desc, category_id = category_id, amount = amount, account_id = account_id)
+        db_func.changeBalanceInAccount(balance = self.acc_balance + amount_willChange_account, id = account_id)
+        
+        current_balance = self.accounts_map_balance.get(account_name, 0)
+        new_balance = current_balance + amount_willChange_account
+        self.accounts_map_balance[account_name] = new_balance
+        
+        self.update_account_balance(account_name)
+        # print(account_name)
+
     def update_account_balance(self, choise):
-        acc_balance = self.accounts_map_balance.get(choise, 0)
+        self.acc_balance = self.accounts_map_balance.get(choise, 0)
         # test = self.acc_combo.get()
-        self.acc_balance_label.configure(text=f"มีจำนวนเงิน {acc_balance}")
+        self.acc_balance_label.configure(text=f"มีจำนวนเงิน {self.acc_balance}")
 class MoneyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
