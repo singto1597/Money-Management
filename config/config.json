@@ -6,7 +6,7 @@
         {"variableName": "account_id", "variableType": "INTEGER PRIMARY KEY"},
         {"variableName": "account_name", "variableType": "TEXT UNIQUE"},
         {"variableName": "account_type", "variableType": "TEXT"},
-        {"variableName": "initial_balance", "variableType": "REAL"}
+        {"variableName": "account_balance", "variableType": "REAL"}
       ]
     },
     {

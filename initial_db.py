@@ -33,7 +33,7 @@ def initAccounts_default():
     default_Accounts = js_file.openFile_as_key("default_accounts")
     for account in default_Accounts:
         tableName = "Accounts"
-        columnWillInsert = "(account_name, account_type, initial_balance)"
+        columnWillInsert = "(account_name, account_type, account_balance)"
         valueWillInsert = (account["name"], account["type"], account["initial_balance"])
         db.insertInfoIntoTable(tableName, columnWillInsert, valueWillInsert)
 

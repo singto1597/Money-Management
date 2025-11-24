@@ -12,12 +12,12 @@ initDB.initializeApp()
 # db_function.addAccount("M's Wallet", "Asset", 500) # ถ้าไม่พัง แสดงว่าผ่าน
 
 # 3. ลองดึงข้อมูลมาดู
-print("--- Test Fetch ---")
-accounts = db.getDB("Accounts")
-print(accounts) 
+# print("--- Test Fetch ---")
+# accounts = db.getDB("Accounts")
+# print(accounts) 
 # ดูว่ามันออกมาเป็น [{'account_name': "M's Wallet", ...}] หรือไม่
-choise = "กระเป๋าตังค์"
-id = db.getDB(tableName = "Accounts", column = "account_id", condition = "account_name = ?", conditionValues = (choise,))
-print ("id = ", id[0]["account_id"])
+# choise = "กระเป๋าตังค์"
+# id = db.getDB(tableName = "Accounts", column = "account_id", condition = "account_name = ?", conditionValues = (choise,))
+# print ("id = ", id[0]["account_id"])
 # # 4. ลองลบ
 # db_function.deleteAccount("M's Wallet")

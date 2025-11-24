@@ -6,7 +6,8 @@ class TransactionFrame(ctk.CTkFrame):
         super().__init__(master, **kwargs)
 
         self.accounts_map = { row["account_name"]: row["account_id"] for row in db.getDB("Accounts") }
-        
+        self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
+
         raw_income = db.getDB("Categories", condition="category_type = ?", conditionValues=("income",))
         self.income_map = { row["category_name"]: row["category_id"] for row in raw_income }
         
@@ -39,7 +40,10 @@ class TransactionFrame(ctk.CTkFrame):
 
         # Row 4: กระเป๋าเงิน
         self.acc_label = ctk.CTkLabel(self, text="กระเป๋า/บัญชี:")
-        self.acc_combo = ctk.CTkComboBox(self, values=list(self.accounts_map.keys()))
+        self.acc_combo = ctk.CTkComboBox(self, values=list(self.accounts_map.keys()), command = self.update_account_balance)
+        self.acc_balance = list(self.accounts_map_balance.values())[0]
+        # print (self.acc_balance)
+        self.acc_balance_label = ctk.CTkLabel(master = self, text = f"มีจำนวนเงิน {self.acc_balance}")
 
         # Row 5: ปุ่มบันทึก
         self.submit_btn = ctk.CTkButton(self, text="บันทึกรายการ", command=self.submit_data)
@@ -59,9 +63,9 @@ class TransactionFrame(ctk.CTkFrame):
 
         self.acc_label.grid(row=4, column=0, padx=20, pady=10, sticky="e")
         self.acc_combo.grid(row=4, column=1, padx=20, pady=10, sticky="ew")
+        self.acc_balance_label.grid(row=5, column=1, padx=20, pady=10, sticky="w")
 
-    
-        self.submit_btn.grid(row=5, column=0, columnspan=2, padx=20, pady=30, sticky="ew")
+        self.submit_btn.grid(row=6, column=0, columnspan=2, padx=20, pady=30, sticky="ew")
 
     def update_category_list(self, value):
         if value == "รายรับ":
@@ -95,7 +99,10 @@ class TransactionFrame(ctk.CTkFrame):
             category_id = self.expense_map.get(category_name)
             
         print(f"Saving: Type={transaction_type}, AccID={account_id}, CatID={category_id}, Amt={amount}, desc={desc}")
-
+    def update_account_balance(self, choise):
+        acc_balance = self.accounts_map_balance.get(choise, 0)
+        # test = self.acc_combo.get()
+        self.acc_balance_label.configure(text=f"มีจำนวนเงิน {acc_balance}")
 class MoneyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
