@@ -120,6 +120,26 @@ class TransactionFrame(ctk.CTkFrame):
         self.acc_balance = self.accounts_map_balance.get(choise, 0)
         # test = self.acc_combo.get()
         self.acc_balance_label.configure(text=f"มีจำนวนเงิน {self.acc_balance}")
+
+
+class TransferFrame(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+class MainTabview(ctk.CTkTabview):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        self.add("ทั่วไป")
+        self.add("โอนเงิน")
+
+        self.general_frame = TransactionFrame(master=self.tab("ทั่วไป"))
+        self.general_frame.pack(fill="both", expand=True)
+
+        self.transfer_frame = TransferFrame(master=self.tab("โอนเงิน"))
+        self.transfer_frame.pack(fill="both", expand=True)
+
+
 class MoneyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -131,7 +151,7 @@ class MoneyApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         
-        self.trans_frame = TransactionFrame(master=self)
+        self.trans_frame = MainTabview(master=self)
         self.trans_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
 if __name__ == "__main__":
