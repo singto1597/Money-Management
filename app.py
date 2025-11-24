@@ -89,7 +89,7 @@ class TransactionFrame(ctk.CTkFrame):
         if not amount:
             amount = 0
         else:
-            amount = int(amount)
+            amount = float(amount)
 
         if not desc:
             desc = transaction_type
@@ -125,6 +125,64 @@ class TransactionFrame(ctk.CTkFrame):
 class TransferFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self.accounts_map = {row["account_name"]: row["account_id"] for row in db.getDB("Accounts")}
+        self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
+        acc_names = list(self.accounts_map.keys())
+
+        self.grid_columnconfigure(1, weight=1)
+
+        self.lbl_from = ctk.CTkLabel(self, text="จากกระเป๋า:")
+        self.combo_from = ctk.CTkComboBox(self, values=acc_names, command = self.update_from_account_balance)
+
+        self.from_balance = list(self.accounts_map_balance.values())[0]
+        self.lbl_from_balance = ctk.CTkLabel(master = self, text = f"มีจำนวนเงิน {self.from_balance}")
+        
+
+        self.lbl_to = ctk.CTkLabel(self, text="ไปกระเป๋า:")
+        self.combo_to = ctk.CTkComboBox(self, values=acc_names, command = self.update_to_account_balance)
+
+        self.to_balance = list(self.accounts_map_balance.values())[0]
+        self.lbl_to_balance = ctk.CTkLabel(master = self, text = f"มีจำนวนเงิน {self.to_balance}")
+
+
+
+        self.lbl_amt = ctk.CTkLabel(self, text="จำนวนเงิน:")
+        self.entry_amt = ctk.CTkEntry(self, placeholder_text="0.00")
+
+        self.btn_submit = ctk.CTkButton(self, text="ยืนยันการโอน", command=self.submit_transfer, fg_color="orange", hover_color="darkorange")
+
+
+
+        self.lbl_from.grid(row=0, column=0, padx=20, pady=10, sticky="e")
+        self.combo_from.grid(row=0, column=1, padx=20, pady=10, sticky="ew")
+        self.lbl_from_balance.grid(row=1, column=1, padx=20, pady=10, sticky="w")
+
+
+        self.lbl_to.grid(row=2, column=0, padx=20, pady=10, sticky="e")
+        self.combo_to.grid(row=2, column=1, padx=20, pady=10, sticky="ew")
+        self.lbl_to_balance.grid(row=3, column=1, padx=20, pady=10, sticky="w")
+
+        self.lbl_amt.grid(row=4, column=0, padx=20, pady=10, sticky="e")
+        self.entry_amt.grid(row=4, column=1, padx=20, pady=10, sticky="ew")
+
+        self.btn_submit.grid(row=5, column=0, columnspan=2, padx=20, pady=20, sticky="ew")
+    def submit_transfer(self):
+        acc_from_name = self.combo_from.get()
+        acc_to_name = self.combo_to.get()
+        amount = self.entry_amt.get()
+
+        if not amount: return
+        amount = float(amount)
+
+    def update_from_account_balance(self, choise):
+        self.from_balance = self.accounts_map_balance.get(choise, 0)
+        # test = self.acc_combo.get()
+        self.lbl_from_balance.configure(text=f"มีจำนวนเงิน {self.from_balance}")
+
+    def update_to_account_balance(self, choise):
+        self.to_balance = self.accounts_map_balance.get(choise, 0)
+        # test = self.acc_combo.get()
+        self.lbl_to_balance.configure(text=f"มีจำนวนเงิน {self.to_balance}")
 
 class MainTabview(ctk.CTkTabview):
     def __init__(self, master, **kwargs):
