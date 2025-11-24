@@ -86,10 +86,8 @@ class TransactionFrame(ctk.CTkFrame):
         desc = self.desc_entry.get()
         amount = self.amount_entry.get()
 
-        if not amount:
-            amount = 0
-        else:
-            amount = float(amount)
+        if not amount: return
+        amount = float(amount)
 
         if not desc:
             desc = transaction_type
@@ -173,6 +171,9 @@ class TransferFrame(ctk.CTkFrame):
 
         if not amount: return
         amount = float(amount)
+        if amount == 0: return
+        if acc_from_name == acc_to_name: return
+        print(f"โอน {amount} จาก {acc_from_name} -> {acc_to_name}")
 
     def update_from_account_balance(self, choise):
         self.from_balance = self.accounts_map_balance.get(choise, 0)

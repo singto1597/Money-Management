@@ -41,4 +41,4 @@ def addTransaction(description, category_id, amount, account_id, transfer_group_
     valueWillInsert = (record_time, description, category_id, amount, account_id, transfer_group_id)
     db.insertInfoIntoTable(tableName, columnWillInsert, valueWillInsert)
 
-def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
+# def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
