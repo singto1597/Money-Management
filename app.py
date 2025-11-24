@@ -1,95 +1,115 @@
 import customtkinter as ctk
 import db
-class transaction(ctk.CTkFrame):
+
+class TransactionFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        # self.grid_columnconfigure(0, weight=0) 
-        # self.grid_columnconfigure(1, weight=1)
-
-        accounts = db.getDB(tableName = "Accounts", column = "account_name")
-        income_categories = db.getDB(tableName = "Categories", column = "category_name", condition = "category_type = ?", conditionValues = ("income",))
-        expense_categories = db.getDB(tableName = "Categories", column = "category_name", condition = "category_type = ?", conditionValues = ("expense",))
-
-        list_accounts = []     
-        list_income_categories = ["-"]
-        list_expense_categories = ["-"]
-        for account in accounts:
-            list_accounts.append(account["account_name"])
-
-
-        for category in income_categories:
-            list_income_categories.append(category["category_name"])
-        for category in expense_categories:
-            list_expense_categories.append(category["category_name"])
+        self.accounts_map = { row["account_name"]: row["account_id"] for row in db.getDB("Accounts") }
+        
+        raw_income = db.getDB("Categories", condition="category_type = ?", conditionValues=("income",))
+        self.income_map = { row["category_name"]: row["category_id"] for row in raw_income }
+        
+        raw_expense = db.getDB("Categories", condition="category_type = ?", conditionValues=("expense",))
+        self.expense_map = { row["category_name"]: row["category_id"] for row in raw_expense }
 
         
+        self.grid_columnconfigure(0, weight=0) 
+        self.grid_columnconfigure(1, weight=1) 
+
         
-        self.type_select_income = ctk.CTkComboBox(master = self, values=list_income_categories, command = self.on_select_type)
-        self.type_select_expense = ctk.CTkComboBox(master = self, values=list_expense_categories, command = self.on_select_type)
+        # Row 0: เลือกประเภท 
+        self.type_label = ctk.CTkLabel(self, text="ประเภทธุรกรรม:")
+        self.type_seg_btn = ctk.CTkSegmentedButton(self, 
+                                                   values=["รายจ่าย", "รายรับ"], 
+                                                   command=self.update_category_list)
+        self.type_seg_btn.set("รายจ่าย") # defalse
+
+        # Row 1: รายการ
+        self.desc_label = ctk.CTkLabel(self, text="รายการ:")
+        self.desc_entry = ctk.CTkEntry(self, placeholder_text="ซื้ออะไรมา??")
+
+        # Row 2: หมวดหมู่
+        self.cat_label = ctk.CTkLabel(self, text="หมวดหมู่:")
+        self.cat_combo = ctk.CTkComboBox(self, values=list(self.expense_map.keys()))
+
+        # Row 3: จำนวนเงิน
+        self.amount_label = ctk.CTkLabel(self, text="จำนวนเงิน:")
+        self.amount_entry = ctk.CTkEntry(self, placeholder_text="0.00")
+
+        # Row 4: กระเป๋าเงิน
+        self.acc_label = ctk.CTkLabel(self, text="กระเป๋า/บัญชี:")
+        self.acc_combo = ctk.CTkComboBox(self, values=list(self.accounts_map.keys()))
+
+        # Row 5: ปุ่มบันทึก
+        self.submit_btn = ctk.CTkButton(self, text="บันทึกรายการ", command=self.submit_data)
+
         
-        self.desc_text = ctk.CTkLabel(master = self, text = "รายการ")
-        self.desc_entry = ctk.CTkEntry(master = self, placeholder_text="ซื้ออะไรมา??")
+        self.type_label.grid(row=0, column=0, padx=20, pady=10, sticky="e")
+        self.type_seg_btn.grid(row=0, column=1, padx=20, pady=10, sticky="ew")
 
-        self.type_text = ctk.CTkLabel(master = self, text = "ประเภท")
-        self.income_type = ctk.CTkLabel(master = self, text = "รายรับ")
-        self.expense_type = ctk.CTkLabel(master = self, text = "รายจ่าย")
+        self.desc_label.grid(row=1, column=0, padx=20, pady=10, sticky="e")
+        self.desc_entry.grid(row=1, column=1, padx=20, pady=10, sticky="ew")
 
-        self.amount_text = ctk.CTkLabel(master = self, text = "จำนวน")
-        self.amount_entry = ctk.CTkEntry(master = self, placeholder_text="ซื้อมาเท่าไหร่??")
+        self.cat_label.grid(row=2, column=0, padx=20, pady=10, sticky="e")
+        self.cat_combo.grid(row=2, column=1, padx=20, pady=10, sticky="ew")
 
-        self.account_text = ctk.CTkLabel(master = self, text = "จาก")
-        self.account_select = ctk.CTkComboBox(master = self, values=list_accounts, command = self.on_select_account)
-        self.remaining_text = ctk.CTkLabel(master = self, text = "ตอนนี้คงเหลืออยู่ 100 บาท")
+        self.amount_label.grid(row=3, column=0, padx=20, pady=10, sticky="e")
+        self.amount_entry.grid(row=3, column=1, padx=20, pady=10, sticky="ew")
 
-        self.submit_button = ctk.CTkButton(master = self, text="Submit")
+        self.acc_label.grid(row=4, column=0, padx=20, pady=10, sticky="e")
+        self.acc_combo.grid(row=4, column=1, padx=20, pady=10, sticky="ew")
 
+    
+        self.submit_btn.grid(row=5, column=0, columnspan=2, padx=20, pady=30, sticky="ew")
 
-        self.desc_text.grid(row=0, column=0, padx=20, pady=10, sticky="w")
-        self.desc_entry.grid(row=0, column=1, padx=20, pady=10, sticky="w")
-
-        self.type_text.grid(row=1, column=0, padx=20, pady=10, sticky="w")
-        self.type_select_income.grid(row=1, column=1, padx=20, pady=10, sticky="w")
-        self.type_select_expense.grid(row=2, column=1, padx=20, pady=10, sticky="w")
-        self.income_type.grid(row=1, column=2, padx=20, pady=10, sticky="w")
-        self.expense_type.grid(row=2, column=2, padx=20, pady=10, sticky="w")
-
-        self.amount_text.grid(row=3, column=0, padx=20, pady=10, sticky="w")
-        self.amount_entry.grid(row=3, column=1, padx=20, pady=10, sticky="w")
-
-        self.account_text.grid(row=4, column=0, padx=20, pady=10, sticky="w")
-        self.account_select.grid(row=4, column=1, padx=20, pady=10, sticky="w")
-        self.remaining_text.grid(row=4, column=2, padx=20, pady=10, sticky="w")
-
-        self.submit_button.grid(row=0, column=0, padx=20, pady=10, sticky="se")
-
-
-    def on_select_account(self, choise):
-        if choise != "-":
-            self.id = db.getDB(tableName = "Accounts", column = "account_id", condition = "account_name = ?", conditionValues = (choise, ))
+    def update_category_list(self, value):
+        if value == "รายรับ":
+            new_values = list(self.income_map.keys())
+            self.submit_btn.configure(fg_color="green", hover_color="darkgreen") # เปลี่ยนสีปุ่มให้รู้ว่าเป็นรายรับ
         else:
-            return
-        print ("account id = ", self.id[0]["account_id"])
-    def on_select_type(self, choise):
-        if choise != "-":
-            self.id = db.getDB(tableName = "Categories", column = "category_id", condition = "category_name = ?", conditionValues = (choise, ))
-        else:
-            return
-        
-        print ("category id = ", self.id[0]["category_id"])
+            new_values = list(self.expense_map.keys())
+            self.submit_btn.configure(fg_color="#3B8ED0", hover_color="#36719F") # สีเดิม (ฟ้า)
 
-class moneyApp(ctk.CTk):
+        self.cat_combo.configure(values=new_values)
+        self.cat_combo.set(new_values[0] if new_values else "-")
+
+    def submit_data(self):
+        account_name = self.acc_combo.get()
+        category_name = self.cat_combo.get()
+        transaction_type = self.type_seg_btn.get()
+        desc = self.desc_entry.get()
+        amount = self.amount_entry.get()
+
+        if not amount:
+            amount = 0
+        if not desc:
+            desc = transaction_type
+
+        
+        account_id = self.accounts_map.get(account_name)
+        
+        if transaction_type == "รายรับ":
+            category_id = self.income_map.get(category_name)
+        else:
+            category_id = self.expense_map.get(category_name)
+            
+        print(f"Saving: Type={transaction_type}, AccID={account_id}, CatID={category_id}, Amt={amount}, desc={desc}")
+
+class MoneyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("800x600")
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        self.geometry("600x500") 
         self.title("Money Management")
-        self.balance = 0
-        self.trans = transaction(master = self)
-        self.trans.grid(row=0, column=0, sticky="nsew", padx=40, pady=40)
+        
+        
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
+        
+        self.trans_frame = TransactionFrame(master=self)
+        self.trans_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
 if __name__ == "__main__":
-    app = moneyApp()
+    app = MoneyApp()
     app.mainloop()
