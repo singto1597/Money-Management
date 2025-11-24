@@ -22,6 +22,11 @@ def deleteAccount(nameOfAccount):
     tableName = "Accounts"
     db.deleteInfoIntoTable(tableName, "account_name = ?", (nameOfAccount,))
 
+def changeValueInAccount(columnWillChange, valueWillChange, conditionOfColumn = None):
+    db.changeInfoIntoTable(tableName = "Accounts", tupleOfColumn_WillChange = (columnWillChange,), tupleOfInfo_WillChange_Values = (valueWillChange,), conditionOfColumn = conditionOfColumn)
+
+def changeBalanceInAccount(balance, id):
+    changeValueInAccount(columnWillChange = "account_balance", valueWillChange = balance, conditionOfColumn = f"account_id = {id}")
 
 def addTransaction(description, category, amount, account, transfer_group_id = None, date_input = None):
     tableName = "Transactions"
