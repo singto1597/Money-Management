@@ -1,5 +1,5 @@
 import db
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def addCategory(nameOfCategory, typeOfCategory):
     tableName = "Categories"
@@ -58,3 +58,30 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
                    transfer_group_id = 0)
     changeBalanceInAccount(balance = to_acc_balance + amount, 
                            id = to_acc_id)
+    
+def getTransactionsByDateRange(start_date_str, end_date_str):
+    # start_date_str: "2023-11-20"
+    # end_date_str: "2023-11-26"
+    
+    start_full = f"{start_date_str} 00:00:00"
+    end_full = f"{end_date_str} 23:59:59"
+    
+
+    conn = db.connectToDatabase()
+    cursor = conn.cursor()
+    
+    sql = """
+        SELECT T.transaction_id, T.transaction_date, T.description, T.amount, 
+               C.category_name, C.category_type, A.account_name
+        FROM Transactions T
+        JOIN Categories C ON T.category_id = C.category_id
+        JOIN Accounts A ON T.account_id = A.account_id
+        WHERE T.transaction_date BETWEEN ? AND ?
+        ORDER BY T.transaction_date DESC
+    """
+    
+    cursor.execute(sql, (start_full, end_full))
+    result = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    return result
