@@ -12,7 +12,9 @@ class allHistoryTable(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.cache_widgets = []
+        self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
+        self.accounts_map = { row["account_name"]: row["account_id"] for row in db.getDB("Accounts") }
+        self.cache_widgets = [] 
 
         self.ctrl_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.ctrl_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
@@ -33,8 +35,10 @@ class allHistoryTable(ctk.CTkFrame):
         self.table_frame.grid_columnconfigure(1, weight=3) # รายการ (กว้างสุด)
         self.table_frame.grid_columnconfigure(2, weight=1) # หมวด
         self.table_frame.grid_columnconfigure(3, weight=1) # จำนวนเงิน
+        self.table_frame.grid_columnconfigure(4, weight=0) # ปุ่ม Edit
+        self.table_frame.grid_columnconfigure(5, weight=0) # ปุ่ม Delete
 
-        headers = ["วันที่/เวลา", "รายการ", "หมวดหมู่", "จำนวนเงิน"]
+        headers = ["วันที่/เวลา", "รายการ", "หมวดหมู่", "จำนวนเงิน", "", ""]
         for idx, h in enumerate(headers):
             lbl = ctk.CTkLabel(self.table_frame, text=h, font=("Arial", 14, "bold"))
             lbl.grid(row=0, column=idx, sticky="w", padx=5, pady=5)
@@ -80,6 +84,13 @@ class allHistoryTable(ctk.CTkFrame):
             
             amount_text = f"{row['amount']:,.2f}"
 
+            t_id = row['transaction_id']
+            acc_name = row['account_name']
+            amo = row['amount']
+            t_type = row['category_type']
+            cmd_edit = lambda x=t_id, d=row['description'], a=row['amount']: self.open_edit_popup(x, d, a)
+            cmd_delete = lambda x=t_id, acc = acc_name, a = amo, t = t_type: self.delete_item(x, acc, a, t)
+
             if i < len(self.cache_widgets):
                 widgets = self.cache_widgets[i]
                 
@@ -87,6 +98,8 @@ class allHistoryTable(ctk.CTkFrame):
                 widgets[1].configure(text=row['description'])
                 widgets[2].configure(text=row['category_name'])
                 widgets[3].configure(text=amount_text, text_color=amount_color)
+                widgets[4].configure(command=cmd_edit)
+                widgets[5].configure(command=cmd_delete)
                 
                 for w in widgets: w.grid()
                 
@@ -95,19 +108,45 @@ class allHistoryTable(ctk.CTkFrame):
                 l2 = ctk.CTkLabel(self.table_frame, text=row['description'])
                 l3 = ctk.CTkLabel(self.table_frame, text=row['category_name'])
                 l4 = ctk.CTkLabel(self.table_frame, text=amount_text, text_color=amount_color)
+          
+                btn_edit = ctk.CTkButton(self.table_frame, text="✏️", width=30, fg_color="orange", command=cmd_edit)
+                
+          
+                btn_delete = ctk.CTkButton(self.table_frame, text="🗑️", width=30, fg_color="red", command=cmd_delete)
+
+
 
                 l1.grid(row=current_row_idx, column=0, sticky="w", padx=5)
                 l2.grid(row=current_row_idx, column=1, sticky="w", padx=5)
                 l3.grid(row=current_row_idx, column=2, sticky="w", padx=5)
                 l4.grid(row=current_row_idx, column=3, sticky="e", padx=5)
+                btn_edit.grid(row=current_row_idx, column=4, padx=2)
+                btn_delete.grid(row=current_row_idx, column=5, padx=2)
 
-                self.cache_widgets.append([l1, l2, l3, l4])
+                self.cache_widgets.append([l1, l2, l3, l4, btn_edit, btn_delete])
 
         # 4. ซ่อน Widget ส่วนเกิน
         for i in range(len(transactions), len(self.cache_widgets)):
             for widget in self.cache_widgets[i]:
                 widget.grid_remove()
+    def delete_item(self, t_id, account_name, amount, type):
+        print(f"Deleting transaction {t_id}")
+        # เรียก DB ลบ
+        db_func.deleteTransaction(t_id)
+        acc_id = self.accounts_map.get(account_name, 0)
+        acc_balance = self.accounts_map_balance.get(account_name, 0)
+        if type == "income":
+            db_func.changeBalanceInAccount(balance = acc_balance - amount, 
+                                           id = acc_id)
+        else:
+            db_func.changeBalanceInAccount(balance = acc_balance + amount, 
+                                           id = acc_id)
+        # รีเฟรชตาราง
+        self.refresh_table()
 
+    def open_edit_popup(self, t_id, desc, amount):
+        # เปิดหน้าต่าง Popup
+        EditPopup(self, t_id, desc, amount, self.refresh_table)
 
 class HistoryPage(ctk.CTkTabview): 
     def __init__(self, master, **kwargs):
@@ -138,3 +177,38 @@ class HistoryPage(ctk.CTkTabview):
     #         print ("test")
 
 
+class EditPopup(ctk.CTkToplevel):
+    def __init__(self, master, t_id, old_desc, old_amount, callback_refresh):
+        super().__init__(master)
+        self.title("แก้ไขรายการ")
+        self.geometry("300x200")
+        
+        self.t_id = t_id
+        self.callback_refresh = callback_refresh # ฟังก์ชันที่จะเรียกเมื่อบันทึกเสร็จ
+
+        # UI แก้ไขง่ายๆ
+        ctk.CTkLabel(self, text="รายการ:").pack(pady=5)
+        self.entry_desc = ctk.CTkEntry(self)
+        self.entry_desc.insert(0, old_desc) # ใส่ค่าเดิม
+        self.entry_desc.pack(pady=5)
+
+        ctk.CTkLabel(self, text="จำนวนเงิน:").pack(pady=5)
+        self.entry_amount = ctk.CTkEntry(self)
+        self.entry_amount.insert(0, str(old_amount)) # ใส่ค่าเดิม
+        self.entry_amount.pack(pady=5)
+
+        ctk.CTkButton(self, text="บันทึก", command=self.save_edit, fg_color="green").pack(pady=20)
+        
+        # ทำให้หน้าต่างนี้อยู่บนสุดเสมอ
+        self.attributes("-topmost", True)
+
+    def save_edit(self):
+        new_desc = self.entry_desc.get()
+        new_amt = float(self.entry_amount.get())
+        
+        # ส่งไปแก้ใน DB
+        db_func.updateTransaction(self.t_id, new_desc, new_amt)
+        
+        # สั่งให้หน้าตารางรีเฟรช
+        self.callback_refresh()
+        self.destroy() # ปิดหน้าต่าง
