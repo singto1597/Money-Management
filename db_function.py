@@ -85,3 +85,32 @@ def getTransactionsByDateRange(start_date_str, end_date_str):
     conn.close()
     
     return result
+
+
+def deleteTransaction(transaction_id):
+    conn = db.connectToDatabase()
+    cursor = conn.cursor()
+    try:
+        # ก่อนลบ Transaction ต้องไปแก้เงินคืนใน Account ก่อน (ถ้าเคร่งครัด)
+        # แต่เพื่อความง่ายตอนนี้ ลบเลยละกัน
+        cursor.execute("DELETE FROM Transactions WHERE transaction_id = ?", (transaction_id,))
+        conn.commit()
+    except Exception as e:
+        print(f"Error deleting: {e}")
+    finally:
+        conn.close()
+
+def updateTransaction(transaction_id, description, amount):
+    conn = db.connectToDatabase()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            UPDATE Transactions 
+            SET description = ?, amount = ? 
+            WHERE transaction_id = ?
+        """, (description, amount, transaction_id))
+        conn.commit()
+    except Exception as e:
+        print(f"Error updating: {e}")
+    finally:
+        conn.close()

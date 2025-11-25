@@ -12,6 +12,7 @@ class allHistoryTable(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
+        self.cache_widgets = []
 
         self.ctrl_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.ctrl_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
@@ -33,7 +34,13 @@ class allHistoryTable(ctk.CTkFrame):
         self.table_frame.grid_columnconfigure(2, weight=1) # หมวด
         self.table_frame.grid_columnconfigure(3, weight=1) # จำนวนเงิน
 
+        headers = ["วันที่/เวลา", "รายการ", "หมวดหมู่", "จำนวนเงิน"]
+        for idx, h in enumerate(headers):
+            lbl = ctk.CTkLabel(self.table_frame, text=h, font=("Arial", 14, "bold"))
+            lbl.grid(row=0, column=idx, sticky="w", padx=5, pady=5)
+
         self.refresh_table()
+        
 
     def get_week_range(self):
         today = datetime.now()
@@ -53,8 +60,6 @@ class allHistoryTable(ctk.CTkFrame):
         self.refresh_table()
 
     def refresh_table(self):
-        for widget in self.table_frame.winfo_children():
-            widget.destroy()
 
         start_date, end_date = self.get_week_range()
         s_str = start_date.strftime("%Y-%m-%d")
@@ -65,22 +70,43 @@ class allHistoryTable(ctk.CTkFrame):
         transactions = db_func.getTransactionsByDateRange(s_str, e_str)
 
 
-        headers = ["วันที่/เวลา", "รายการ", "หมวดหมู่", "จำนวนเงิน"]
-        for idx, h in enumerate(headers):
-            lbl = ctk.CTkLabel(self.table_frame, text=h, font=("Arial", 14, "bold"))
-            lbl.grid(row=0, column=idx, sticky="w", padx=5, pady=5)
-
-
         for i, row in enumerate(transactions):
-            current_row = i + 1 
+            current_row_idx = i + 1
+
+ 
+            amount_color = "red" 
+            if row['category_type'] == 'income': amount_color = "green"
+            elif row.get('category_id') == 100: amount_color = "blue"
             
-            amount_color = "green" if row['category_type'] == 'income' else "red"
             amount_text = f"{row['amount']:,.2f}"
 
-            ctk.CTkLabel(self.table_frame, text=row['transaction_date'][0:16]).grid(row=current_row, column=0, sticky="w", padx=5)
-            ctk.CTkLabel(self.table_frame, text=row['description']).grid(row=current_row, column=1, sticky="w", padx=5)
-            ctk.CTkLabel(self.table_frame, text=row['category_name']).grid(row=current_row, column=2, sticky="w", padx=5)
-            ctk.CTkLabel(self.table_frame, text=amount_text, text_color=amount_color).grid(row=current_row, column=3, sticky="e", padx=5)
+            if i < len(self.cache_widgets):
+                widgets = self.cache_widgets[i]
+                
+                widgets[0].configure(text=row['transaction_date'][0:16])
+                widgets[1].configure(text=row['description'])
+                widgets[2].configure(text=row['category_name'])
+                widgets[3].configure(text=amount_text, text_color=amount_color)
+                
+                for w in widgets: w.grid()
+                
+            else:
+                l1 = ctk.CTkLabel(self.table_frame, text=row['transaction_date'][0:16])
+                l2 = ctk.CTkLabel(self.table_frame, text=row['description'])
+                l3 = ctk.CTkLabel(self.table_frame, text=row['category_name'])
+                l4 = ctk.CTkLabel(self.table_frame, text=amount_text, text_color=amount_color)
+
+                l1.grid(row=current_row_idx, column=0, sticky="w", padx=5)
+                l2.grid(row=current_row_idx, column=1, sticky="w", padx=5)
+                l3.grid(row=current_row_idx, column=2, sticky="w", padx=5)
+                l4.grid(row=current_row_idx, column=3, sticky="e", padx=5)
+
+                self.cache_widgets.append([l1, l2, l3, l4])
+
+        # 4. ซ่อน Widget ส่วนเกิน
+        for i in range(len(transactions), len(self.cache_widgets)):
+            for widget in self.cache_widgets[i]:
+                widget.grid_remove()
 
 
 class HistoryPage(ctk.CTkTabview): 
@@ -95,18 +121,20 @@ class HistoryPage(ctk.CTkTabview):
 
         self.transfer_frame = allHistoryTable(master=self.tab("ประวัติรายบัญชี"))
         self.transfer_frame.pack(fill="both", expand=True)
+        # self.configure(command=self._on_tab_change)
+
     def refresh_data(self):
         """สั่งให้ทุกเฟรมย่อยใน HistoryPage ไปโหลดข้อมูลใหม่"""
         self.general_frame.refresh_table()
-        # ถ้ามี self.account_history_frame ก็สั่ง .refresh_table() ของมันด้วย
         
-        # เพิ่มเติม: เพื่อให้มั่นใจว่าถ้ามีการเปลี่ยน Tab แล้วข้อมูลถูกโหลดใหม่ 
-        # เราควรผูกคำสั่ง refresh เข้ากับ event การเปลี่ยน Tab ด้วย
-        self.configure(command=self._on_tab_change)
 
-    def _on_tab_change(self, tab_name):
-        """เมื่อมีการกดเปลี่ยน Tab ให้รีเฟรชข้อมูลใน Tab นั้นๆ"""
-        if tab_name == "ประวัติทั้งหมด":
-            self.general_frame.refresh_table()
-        # elif tab_name == "ประวัติรายบัญชี":
-        #     self.account_history_frame.refresh_table()
+
+    # def _on_tab_change(self, tab_name):
+    #     """เมื่อมีการกดเปลี่ยน Tab ให้รีเฟรชข้อมูลใน Tab นั้นๆ"""
+    #     if tab_name == "ประวัติทั้งหมด":
+    #         self.general_frame.refresh_table()
+    #     elif tab_name == "ประวัติรายบัญชี":
+    #         #     self.account_history_frame.refresh_table()
+    #         print ("test")
+
+
