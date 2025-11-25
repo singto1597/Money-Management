@@ -178,6 +178,16 @@ class TransferFrame(ctk.CTkFrame):
         db_func.transferMoney(amount = amount, 
                               from_acc_id = self.accounts_map.get(acc_from_name), 
                               to_acc_id = self.accounts_map.get(acc_to_name))
+        
+        current_balance = self.accounts_map_balance.get(acc_from_name, 0)
+        new_balance = current_balance - amount
+        self.accounts_map_balance[acc_from_name] = new_balance
+        self.update_from_account_balance(acc_from_name)
+
+        current_balance = self.accounts_map_balance.get(acc_to_name, 0)
+        new_balance = current_balance + amount
+        self.accounts_map_balance[acc_to_name] = new_balance
+        self.update_to_account_balance(acc_to_name)
 
     def update_from_account_balance(self, choise):
         self.from_balance = self.accounts_map_balance.get(choise, 0)
@@ -187,7 +197,7 @@ class TransferFrame(ctk.CTkFrame):
         self.to_balance = self.accounts_map_balance.get(choise, 0)
         self.lbl_to_balance.configure(text=f"มีจำนวนเงิน {self.to_balance}")
 
-class MainTabview(ctk.CTkTabview):
+class AddPage(ctk.CTkTabview): 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
@@ -200,20 +210,80 @@ class MainTabview(ctk.CTkTabview):
         self.transfer_frame = TransferFrame(master=self.tab("โอนเงิน"))
         self.transfer_frame.pack(fill="both", expand=True)
 
+class HistoryPage(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        ctk.CTkLabel(self, text="หน้าประวัติการเงิน", font=("Arial", 24)).pack(pady=50)
+
+class EditPage(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        ctk.CTkLabel(self, text="หน้าแก้ไข เพิ่ม เกี่ยวกับประเภทและบัญชี", font=("Arial", 24)).pack(pady=50)
 
 class MoneyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("600x500") 
         self.title("Money Management")
-        
-        
-        self.grid_columnconfigure(0, weight=1)
+        self.geometry("900x600")
+
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+        self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
+        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+
+
+        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Money Manager", font=ctk.CTkFont(size=20, weight="bold"))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+
+        self.btn_add = self.create_sidebar_button("เพิ่มรายการ", self.show_add_page, row=1)
+        self.btn_history = self.create_sidebar_button("ประวัติ", self.show_history_page, row=2)
+        self.btn_edit = self.create_sidebar_button("แก้ไขข้อมูล", self.show_edit_page, row=3)
+
         
-        self.trans_frame = MainTabview(master=self)
-        self.trans_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        self.add_page = AddPage(master=self)
+        self.history_page = HistoryPage(master=self)
+        self.edit_page = EditPage(master=self)
+
+        self.show_add_page()
+
+    def create_sidebar_button(self, text, command, row):
+        btn = ctk.CTkButton(self.sidebar_frame, text=text, command=command,
+                            fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                            anchor="w") # anchor="w" ให้ตัวหนังสือชิดซ้าย
+        btn.grid(row=row, column=0, padx=20, pady=10, sticky="ew")
+        return btn
+
+    def select_button(self, btn):
+        """ เปลี่ยนสีปุ่มที่ถูกเลือก """
+        self.btn_add.configure(fg_color="transparent")
+        self.btn_history.configure(fg_color="transparent")
+        self.btn_edit.configure(fg_color="transparent")
+        
+        btn.configure(fg_color=("gray75", "gray25"))
+
+    def show_add_page(self):
+        self.select_button(self.btn_add)
+        self.hide_all_pages()
+        self.add_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+
+    def show_history_page(self):
+        self.select_button(self.btn_history)
+        self.hide_all_pages()
+        self.history_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        # ตรงนี้สั่ง self.history_page.refresh_data() ได้ในอนาคต
+
+    def show_edit_page(self):
+        self.select_button(self.btn_edit)
+        self.hide_all_pages()
+        self.edit_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+
+    def hide_all_pages(self):
+        self.add_page.grid_forget()
+        self.history_page.grid_forget()
+        self.edit_page.grid_forget()
 
 if __name__ == "__main__":
     app = MoneyApp()
