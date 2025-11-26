@@ -53,6 +53,7 @@ class MoneyApp(ctk.CTk):
         self.select_button(self.btn_add)
         self.hide_all_pages()
         self.add_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        self.add_page.refresh_data() 
 
     def show_history_page(self):
         self.select_button(self.btn_history)

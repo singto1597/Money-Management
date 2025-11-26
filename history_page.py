@@ -130,6 +130,7 @@ class allHistoryTable(ctk.CTkFrame):
             for widget in self.cache_widgets[i]:
                 widget.grid_remove()
     def delete_item(self, t_id, account_name, amount, type):
+        self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
         print(f"Deleting transaction {t_id}")
         db_func.deleteTransaction(t_id)
         acc_id = self.accounts_map.get(account_name, 0)
