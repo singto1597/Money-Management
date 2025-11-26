@@ -125,7 +125,6 @@ class allHistoryTable(ctk.CTkFrame):
 
                 self.cache_widgets.append([l1, l2, l3, l4, btn_edit, btn_delete])
 
-        # 4. ซ่อน Widget ส่วนเกิน
         for i in range(len(transactions), len(self.cache_widgets)):
             for widget in self.cache_widgets[i]:
                 widget.grid_remove()
@@ -146,10 +145,8 @@ class allHistoryTable(ctk.CTkFrame):
         db_func.changeBalanceInAccount(balance = acc_balance + diff, 
                                        id = acc_id)
         self.refresh_table()
-        self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
 
     def open_edit_popup(self, t_id, desc, amount):
-        # เปิดหน้าต่าง Popup
         EditPopup(self, t_id, desc, amount, self.refresh_table)
 
 class HistoryPage(ctk.CTkTabview): 

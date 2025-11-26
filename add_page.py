@@ -117,11 +117,9 @@ class TransactionFrame(ctk.CTkFrame):
         self.update_view() 
     
     def reload_from_db(self):
-        # ดึงข้อมูลบัญชีล่าสุด
         self.accounts_map = { row["account_name"]: row["account_id"] for row in db.getDB("Accounts") }
         self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
         
-        # ดึงหมวดหมู่ล่าสุด (เผื่อมีการเพิ่มหมวดหมู่ใหม่)
         raw_income = db.getDB("Categories", condition="category_type = ?", conditionValues=("income",))
         self.income_map = { row["category_name"]: row["category_id"] for row in raw_income }
         
@@ -130,18 +128,15 @@ class TransactionFrame(ctk.CTkFrame):
 
     def update_view(self):
         """ฟังก์ชันนี้จะถูกเรียกโดย AddPage เมื่อสลับมาหน้านี้"""
-        self.reload_from_db() # 1. โหลดข้อมูลใหม่จาก DB
+        self.reload_from_db()
         
-        # 2. อัปเดต Dropdown (เผื่อมีบัญชีงอกใหม่)
         current_acc = self.acc_combo.get()
         self.acc_combo.configure(values=list(self.accounts_map.keys()))
         self.acc_combo.set(current_acc if current_acc in self.accounts_map else list(self.accounts_map.keys())[0])
         
-        # 3. อัปเดตยอดเงินที่โชว์
         self.update_account_balance(self.acc_combo.get())
 
     def update_account_balance(self, choice):
-        # ดึงจากตัวแปรที่เพิ่ง reload มา รับรองว่าสดใหม่
         self.acc_balance = self.accounts_map_balance.get(choice, 0)
         self.acc_balance_label.configure(text=f"มีจำนวนเงิน {self.acc_balance:,.2f} บาท")
 
@@ -231,12 +226,10 @@ class TransferFrame(ctk.CTkFrame):
         """เรียกเมื่อสลับมาหน้าโอนเงิน"""
         self.reload_from_db()
         
-        # อัปเดต Dropdown และยอดเงิน
         acc_names = list(self.accounts_map.keys())
         self.combo_from.configure(values=acc_names)
         self.combo_to.configure(values=acc_names)
         
-        # อัปเดต Label ยอดเงิน
         self.update_from_account_balance(self.combo_from.get())
         self.update_to_account_balance(self.combo_to.get())
 
@@ -254,6 +247,5 @@ class AddPage(ctk.CTkTabview):
         self.transfer_frame.pack(fill="both", expand=True)
     
     def refresh_data(self):
-        # สั่งให้ลูกน้องทั้ง 2 คน ไปโหลดข้อมูลจาก DB ใหม่ซะ
         self.general_frame.update_view()
         self.transfer_frame.update_view()
