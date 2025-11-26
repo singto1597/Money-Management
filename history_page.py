@@ -131,18 +131,21 @@ class allHistoryTable(ctk.CTkFrame):
                 widget.grid_remove()
     def delete_item(self, t_id, account_name, amount, type):
         print(f"Deleting transaction {t_id}")
-        # เรียก DB ลบ
         db_func.deleteTransaction(t_id)
         acc_id = self.accounts_map.get(account_name, 0)
         acc_balance = self.accounts_map_balance.get(account_name, 0)
+        print(type)
+
+        diff = 0
         if type == "income":
-            db_func.changeBalanceInAccount(balance = acc_balance - amount, 
-                                           id = acc_id)
+            diff = -amount 
         else:
-            db_func.changeBalanceInAccount(balance = acc_balance + amount, 
-                                           id = acc_id)
-        # รีเฟรชตาราง
+            diff = amount 
+        
+        db_func.changeBalanceInAccount(balance = acc_balance + diff, 
+                                       id = acc_id)
         self.refresh_table()
+        self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
 
     def open_edit_popup(self, t_id, desc, amount):
         # เปิดหน้าต่าง Popup
