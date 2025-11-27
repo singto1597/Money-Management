@@ -9,7 +9,7 @@ class MoneyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Money Management")
-        self.geometry("900x600")
+        self.geometry("1000x600")
 
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)

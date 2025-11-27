@@ -45,8 +45,11 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
     accounts_map_balance = { row["account_id"]: row["account_balance"] for row in db.getDB("Accounts") }
     from_acc_balance = accounts_map_balance[from_acc_id]
     to_acc_balance = accounts_map_balance[to_acc_id]
+    CAT_OUT_ID = 99 
+    CAT_IN_ID = 100
     addTransaction(description = f"โอนไป {to_acc_id} ({desc})", 
                    amount = amount, 
+                   category_id = CAT_OUT_ID,
                    account_id = from_acc_id, 
                    transfer_group_id = 0)
     changeBalanceInAccount(balance = from_acc_balance - amount, 
@@ -55,6 +58,7 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
     addTransaction(description = f"ได้รับจาก {from_acc_id} ({desc})", 
                    amount = amount, 
                    account_id = to_acc_id, 
+                   category_id = CAT_IN_ID,
                    transfer_group_id = 0)
     changeBalanceInAccount(balance = to_acc_balance + amount, 
                            id = to_acc_id)
@@ -74,7 +78,7 @@ def getTransactionsByDateRange(start_date_str, end_date_str, account_id = None):
             SELECT T.transaction_id, T.transaction_date, T.description, T.amount, 
                 C.category_name, C.category_type, A.account_name
             FROM Transactions T
-            JOIN Categories C ON T.category_id = C.category_id
+            LEFT JOIN Categories C ON T.category_id = C.category_id
             JOIN Accounts A ON T.account_id = A.account_id
             WHERE T.transaction_date BETWEEN ? AND ? 
             ORDER BY T.transaction_date DESC
@@ -86,7 +90,7 @@ def getTransactionsByDateRange(start_date_str, end_date_str, account_id = None):
             SELECT T.transaction_id, T.transaction_date, T.description, T.amount, 
                 C.category_name, C.category_type, A.account_name
             FROM Transactions T
-            JOIN Categories C ON T.category_id = C.category_id
+            LEFT JOIN Categories C ON T.category_id = C.category_id
             JOIN Accounts A ON T.account_id = A.account_id
             WHERE T.account_id = ? AND T.transaction_date BETWEEN ? AND ? 
             ORDER BY T.transaction_date DESC

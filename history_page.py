@@ -78,9 +78,10 @@ class allHistoryTable(ctk.CTkFrame):
             current_row_idx = i + 1
 
  
-            amount_color = "red" 
+            amount_color = "yellow" 
             if row['category_type'] == 'income': amount_color = "green"
-            elif row.get('category_id') == 100: amount_color = "blue"
+            elif row['category_type'] == 'expense': amount_color = "red"
+            elif row.get('category_id') == 100: amount_color = "yellow"
             
             amount_text = f"{row['amount']:,.2f}"
 
@@ -162,7 +163,7 @@ class accountHistoryTable(ctk.CTkFrame):
         self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
         self.accounts_map = { row["account_name"]: row["account_id"] for row in db.getDB("Accounts") }
         self.cache_widgets = [] 
-
+        
         self.ctrl_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.ctrl_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         
@@ -179,8 +180,11 @@ class accountHistoryTable(ctk.CTkFrame):
         self.table_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
 
         self.acc_label = ctk.CTkLabel(self, text="กระเป๋า/บัญชี:")
-        self.acc_combo = ctk.CTkComboBox(self, values=list(self.accounts_map.keys()))
-        
+        self.acc_combo = ctk.CTkComboBox(self, values=list(self.accounts_map.keys()), command = self.update_account_balance)
+        if self.accounts_map:
+            first_acc = list(self.accounts_map.keys())[0]
+            self.acc_combo.set(first_acc)
+
         self.acc_label.grid(row=2, column=0, padx=20, pady=10, sticky="e")
         self.acc_combo.grid(row=2, column=1, padx=20, pady=10, sticky="e")
         self.table_frame.grid_columnconfigure(0, weight=1) # วันที่
@@ -233,9 +237,10 @@ class accountHistoryTable(ctk.CTkFrame):
             current_row_idx = i + 1
 
  
-            amount_color = "red" 
+            amount_color = "yellow" 
             if row['category_type'] == 'income': amount_color = "green"
-            elif row.get('category_id') == 100: amount_color = "blue"
+            elif row['category_type'] == 'expense': amount_color = "red"
+            elif row.get('category_id') == 100: amount_color = "yellow"
             
             amount_text = f"{row['amount']:,.2f}"
 
@@ -303,6 +308,8 @@ class accountHistoryTable(ctk.CTkFrame):
 
     def open_edit_popup(self, t_id, desc, amount):
         EditPopup(self, t_id, desc, amount, self.refresh_table)
+    def update_account_balance(self, choice):
+        self.refresh_table()
 
 
 class HistoryPage(ctk.CTkTabview): 
