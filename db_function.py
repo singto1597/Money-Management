@@ -59,7 +59,7 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
     changeBalanceInAccount(balance = to_acc_balance + amount, 
                            id = to_acc_id)
     
-def getTransactionsByDateRange(start_date_str, end_date_str):
+def getTransactionsByDateRange(start_date_str, end_date_str, account_id = None):
     # start_date_str: "2023-11-20"
     # end_date_str: "2023-11-26"
     
@@ -69,18 +69,30 @@ def getTransactionsByDateRange(start_date_str, end_date_str):
 
     conn = db.connectToDatabase()
     cursor = conn.cursor()
-    
-    sql = """
-        SELECT T.transaction_id, T.transaction_date, T.description, T.amount, 
-               C.category_name, C.category_type, A.account_name
-        FROM Transactions T
-        JOIN Categories C ON T.category_id = C.category_id
-        JOIN Accounts A ON T.account_id = A.account_id
-        WHERE T.transaction_date BETWEEN ? AND ?
-        ORDER BY T.transaction_date DESC
-    """
-    
-    cursor.execute(sql, (start_full, end_full))
+    if not account_id:
+        sql = """
+            SELECT T.transaction_id, T.transaction_date, T.description, T.amount, 
+                C.category_name, C.category_type, A.account_name
+            FROM Transactions T
+            JOIN Categories C ON T.category_id = C.category_id
+            JOIN Accounts A ON T.account_id = A.account_id
+            WHERE T.transaction_date BETWEEN ? AND ? 
+            ORDER BY T.transaction_date DESC
+        """
+        
+        cursor.execute(sql, (start_full, end_full))
+    else:
+        sql = """
+            SELECT T.transaction_id, T.transaction_date, T.description, T.amount, 
+                C.category_name, C.category_type, A.account_name
+            FROM Transactions T
+            JOIN Categories C ON T.category_id = C.category_id
+            JOIN Accounts A ON T.account_id = A.account_id
+            WHERE T.account_id = ? AND T.transaction_date BETWEEN ? AND ? 
+            ORDER BY T.transaction_date DESC
+        """
+        
+        cursor.execute(sql, (account_id, start_full, end_full))
     result = [dict(row) for row in cursor.fetchall()]
     conn.close()
     
