@@ -245,6 +245,7 @@ class AddPage(ctk.CTkTabview):
 
         self.transfer_frame = TransferFrame(master=self.tab("โอนเงิน"))
         self.transfer_frame.pack(fill="both", expand=True)
+        self.configure(command=self.refresh_data)
     
     def refresh_data(self):
         self.general_frame.update_view()

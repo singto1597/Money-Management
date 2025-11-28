@@ -324,7 +324,7 @@ class HistoryPage(ctk.CTkTabview):
 
         self.account_history_frame = accountHistoryTable(master=self.tab("ประวัติรายบัญชี"))
         self.account_history_frame.pack(fill="both", expand=True)
-        # self.configure(command=self._on_tab_change)
+        self.configure(command=self._on_tab_change)
 
     def refresh_data(self):
         """สั่งให้ทุกเฟรมย่อยใน HistoryPage ไปโหลดข้อมูลใหม่"""
@@ -332,13 +332,12 @@ class HistoryPage(ctk.CTkTabview):
         
 
 
-    # def _on_tab_change(self, tab_name):
-    #     """เมื่อมีการกดเปลี่ยน Tab ให้รีเฟรชข้อมูลใน Tab นั้นๆ"""
-    #     if tab_name == "ประวัติทั้งหมด":
-    #         self.general_frame.refresh_table()
-    #     elif tab_name == "ประวัติรายบัญชี":
-    #         #     self.account_history_frame.refresh_table()
-    #         print ("test")
+    def _on_tab_change(self):
+        """เมื่อมีการกดเปลี่ยน Tab ให้รีเฟรชข้อมูลใน Tab นั้นๆ"""
+    
+        self.general_frame.refresh_table()
+        self.account_history_frame.refresh_table()
+        # print ("test")
 
 
 class EditPopup(ctk.CTkToplevel):
