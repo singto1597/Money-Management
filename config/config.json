@@ -48,8 +48,9 @@
   ],
 
   "default_accounts": [
-    { "name": "กระเป๋าตังค์", "type": "wallet", "initial_balance": 0},
+    { "name": "เงินสด", "type": "cash", "initial_balance": 0},
     { "name": "ออมสิน", "type": "saving", "initial_balance": 0},
-    { "name": "ธนาคาร", "type": "saving", "initial_balance": 0}
+    { "name": "True Money", "type": "bank", "initial_balance": 0},
+    { "name": "ธนาคาร", "type": "bank", "initial_balance": 0}
   ]
 }
