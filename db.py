@@ -10,8 +10,6 @@ def connectToDatabase():
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row 
     return conn
-
-
 def insertInfoIntoTable(tableName, tupleOfColumn_WillInsert, tupleOfInfo_WillInsert_Values):
     # tableName = "Transactions"
     # columnWillInsert = "(amount, description, account_id, category_id)"
@@ -30,7 +28,6 @@ def insertInfoIntoTable(tableName, tupleOfColumn_WillInsert, tupleOfInfo_WillIns
 
     cursor.close()
     conn.close()
-
 def changeInfoIntoTable(tableName, tupleOfColumn_WillChange, tupleOfInfo_WillChange_Values, conditionOfColumn = None):
     # tableName = "Categories"
     # columnWillChange = ("category_name", "category_type")
@@ -56,8 +53,6 @@ def changeInfoIntoTable(tableName, tupleOfColumn_WillChange, tupleOfInfo_WillCha
 
     cursor.close()
     conn.close()
-
-
 def deleteInfoIntoTable(tableName, conditionOfColumn=None, conditionValues=None):
     """
     conditionOfColumn: เช่น "account_name = ?"
@@ -78,11 +73,6 @@ def deleteInfoIntoTable(tableName, conditionOfColumn=None, conditionValues=None)
     conn.commit()
     cursor.close()
     conn.close()
-
-
-
-
-
 def getDB(tableName, column="*", condition=None, conditionValues=None):
 
     # id = ?

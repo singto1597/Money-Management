@@ -39,8 +39,6 @@ class PaymentRow(ctk.CTkFrame):
             
         acc_id = self.account_map.get(acc_name)
         return acc_name, acc_id, amount
-
-
 class TransactionFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -149,7 +147,6 @@ class TransactionFrame(ctk.CTkFrame):
         
         raw_expense = db.getDB("Categories", condition="category_type = ?", conditionValues=("expense",))
         self.expense_map = { row["category_name"]: row["category_id"] for row in raw_expense }
-
 class TransferFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -237,7 +234,6 @@ class TransferFrame(ctk.CTkFrame):
         
         self.update_from_account_balance(self.combo_from.get())
         self.update_to_account_balance(self.combo_to.get())
-
 class AddPage(ctk.CTkTabview): 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)

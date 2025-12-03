@@ -156,8 +156,6 @@ class allHistoryTable(ctk.CTkFrame):
 
     def open_edit_popup(self, t_id, desc, amount):
         EditPopup(self, t_id, desc, amount, self.refresh_table)
-
-
 class accountHistoryTable(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -324,8 +322,6 @@ class accountHistoryTable(ctk.CTkFrame):
         EditPopup(self, t_id, desc, amount, self.refresh_table)
     def update_account_balance(self, choice):
         self.refresh_table()
-
-
 class HistoryPage(ctk.CTkTabview): 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -352,8 +348,6 @@ class HistoryPage(ctk.CTkTabview):
         self.general_frame.refresh_table()
         self.account_history_frame.refresh_table()
         # print ("test")
-
-
 class EditPopup(ctk.CTkToplevel):
     def __init__(self, master, t_id, old_desc, old_amount, callback_refresh):
         super().__init__(master)
@@ -381,11 +375,14 @@ class EditPopup(ctk.CTkToplevel):
 
     def save_edit(self):
         new_desc = self.entry_desc.get()
-        new_amt = float(self.entry_amount.get())
         
-        # ส่งไปแก้ใน DB
-        db_func.updateTransaction(self.t_id, new_desc, new_amt)
+        try:
+            new_amt = float(self.entry_amount.get())
+        except ValueError:
+            print("Error: Please enter a valid number")
+            return
+
+        db_func.editTransactionSafe(self.t_id, new_desc, new_amt)
         
-        # สั่งให้หน้าตารางรีเฟรช
         self.callback_refresh()
         self.destroy() # ปิดหน้าต่าง
