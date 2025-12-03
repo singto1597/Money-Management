@@ -1,9 +1,11 @@
+import sys
 import customtkinter as ctk
-import db
-import db_function as db_func
+# import db
+# import db_function as db_func
 import add_page
 import history_page
 import edit_page
+import summary_page
 
 class MoneyApp(ctk.CTk):
     def __init__(self):
@@ -17,7 +19,7 @@ class MoneyApp(ctk.CTk):
 
         self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
-        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+        self.sidebar_frame.grid_rowconfigure(5, weight=1)
 
 
         self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Money Manager", font=ctk.CTkFont(size=20, weight="bold"))
@@ -25,12 +27,16 @@ class MoneyApp(ctk.CTk):
 
         self.btn_add = self.create_sidebar_button("เพิ่มรายการ", self.show_add_page, row=1)
         self.btn_history = self.create_sidebar_button("ประวัติ", self.show_history_page, row=2)
-        self.btn_edit = self.create_sidebar_button("แก้ไขข้อมูล", self.show_edit_page, row=3)
+        self.btn_summary = self.create_sidebar_button("สรุป/สถิติ", self.show_summary_page, row=3)
+        self.btn_edit = self.create_sidebar_button("แก้ไขข้อมูล", self.show_edit_page, row=4)
 
         
         self.add_page = add_page.AddPage(master=self)
         self.history_page = history_page.HistoryPage(master=self)
         self.edit_page = edit_page.EditPage(master=self)
+        self.summary_page = summary_page.SummaryPage(master=self)
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.show_add_page()
 
@@ -45,6 +51,7 @@ class MoneyApp(ctk.CTk):
         """ เปลี่ยนสีปุ่มที่ถูกเลือก """
         self.btn_add.configure(fg_color="transparent")
         self.btn_history.configure(fg_color="transparent")
+        self.btn_summary.configure(fg_color="transparent")
         self.btn_edit.configure(fg_color="transparent")
         
         btn.configure(fg_color=("gray75", "gray25"))
@@ -60,6 +67,12 @@ class MoneyApp(ctk.CTk):
         self.hide_all_pages()
         self.history_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         self.history_page.refresh_data()
+    
+    def show_summary_page(self):
+        self.select_button(self.btn_summary)
+        self.hide_all_pages()
+        self.summary_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        self.summary_page.refresh_data()
 
     def show_edit_page(self):
         self.select_button(self.btn_edit)
@@ -71,6 +84,21 @@ class MoneyApp(ctk.CTk):
         self.add_page.grid_forget()
         self.history_page.grid_forget()
         self.edit_page.grid_forget()
+        self.summary_page.grid_forget()
+
+    def on_closing(self):
+        print("Closing App...")
+        
+        try:
+            if hasattr(self, 'summary_page'):
+                import matplotlib.pyplot as plt
+                plt.close('all')
+        except Exception as e:
+            print(f"Error closing plot: {e}")
+
+        self.destroy()
+
+        sys.exit(0)
 
 if __name__ == "__main__":
     app = MoneyApp()

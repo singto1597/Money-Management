@@ -184,3 +184,29 @@ def editTransactionSafe(t_id, new_desc, new_amount, new_account_id=None, new_cat
     
     finally:
         conn.close()
+def getExpenseBreakdown():
+    """ดึงข้อมูลสรุปรายจ่ายแยกตามหมวดหมู่ เรียงจากมากไปน้อย"""
+    conn = db.connectToDatabase()
+    cursor = conn.cursor()
+    try:
+        sql = """
+            SELECT C.category_name, SUM(T.amount) as total_amount
+            FROM Transactions T
+            JOIN Categories C ON T.category_id = C.category_id
+            WHERE C.category_type = 'expense' OR C.category_type = 'transfrom_from'
+            GROUP BY C.category_name
+            ORDER BY total_amount DESC
+        """
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        return result
+    except Exception as e:
+        print(f"Error getting breakdown: {e}")
+        return []
+    finally:
+        conn.close()
+
+def getAllAccountBalances():
+    """ดึงข้อมูลบัญชีและยอดเงินล่าสุด"""
+    accounts = db.getDB("Accounts")
+    return accounts
