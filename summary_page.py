@@ -14,14 +14,11 @@ def get_thai_font():
     
     target_fonts = []
     if system_os == "Linux":
-        # 🔥 เอา Waree ขึ้นก่อน เพราะมีทั้งไทยและเลขในตัวเดียว
         target_fonts = ['Waree', 'Loma', 'Garuda', 'Umpush', 'Noto Sans Thai']
     elif system_os == "Windows":
         target_fonts = ['Tahoma', 'Microsoft Sans Serif', 'Angsana New', 'Leelawadee']
     elif system_os == "Darwin": # MacOS
         target_fonts = ['Ayuthaya', 'Thonburi']
-    
-    # วนลูปหาว่าในเครื่องมีฟอนต์ไหนบ้าง
     available_fonts = set(f.name for f in fm.fontManager.ttflist)
     
     for font in target_fonts:
@@ -30,7 +27,6 @@ def get_thai_font():
             
     return 'sans-serif'
 
-# เรียกใช้ฟังก์ชัน
 thai_font_name = get_thai_font()
 plt.rcParams['font.family'] = thai_font_name
 print(f"Graph using font: {thai_font_name}")

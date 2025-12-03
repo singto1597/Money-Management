@@ -7,6 +7,8 @@ import history_page
 import edit_page
 import summary_page
 
+import initial_db
+
 class MoneyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -101,5 +103,12 @@ class MoneyApp(ctk.CTk):
         sys.exit(0)
 
 if __name__ == "__main__":
+    print("Checking Database...")
+    try:
+        initial_db.initializeApp() 
+        print("Database initialized successfully.")
+    except Exception as e:
+        print(f"Database init error: {e}")
+
     app = MoneyApp()
     app.mainloop()

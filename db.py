@@ -1,8 +1,19 @@
 import sqlite3
 import os
+import sys
+
+def get_base_path():
+    """
+    หา path สำหรับเก็บไฟล์ Database
+    """
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(os.path.abspath(__file__))
 
 def connectToDatabase():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = get_base_path() 
+    
     db_path = os.path.join(base_dir, "db", "database.db")
     
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
