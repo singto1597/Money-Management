@@ -65,6 +65,7 @@ class MoneyApp(ctk.CTk):
         self.select_button(self.btn_edit)
         self.hide_all_pages()
         self.edit_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        self.edit_page.refresh_data() 
 
     def hide_all_pages(self):
         self.add_page.grid_forget()

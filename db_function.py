@@ -11,7 +11,7 @@ def deleteCategory(nameOfCategory):
     db.deleteInfoIntoTable(tableName, "category_name = ?", (nameOfCategory,))
 def addAccount(nameOfAccount, typeOfAccount, initial_balance = 0):
     tableName = "Accounts"
-    columnWillInsert = "(account_name, account_type, initial_balance)"
+    columnWillInsert = "(account_name, account_type, account_balance)"
     valueWillInsert = (nameOfAccount, typeOfAccount, initial_balance)
     db.insertInfoIntoTable(tableName, columnWillInsert, valueWillInsert)
 def deleteAccount(nameOfAccount):

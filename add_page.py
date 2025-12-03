@@ -6,7 +6,6 @@ import customtkinter as ctk
 import db
 import db_function as db_func
 
-# --- Class ช่วย: สร้างแถวสำหรับกรอกเงินและเลือกกระเป๋า ---
 class PaymentRow(ctk.CTkFrame):
     def __init__(self, master, account_map, default_amount="", **kwargs):
         super().__init__(master, **kwargs)
