@@ -130,7 +130,6 @@ def updateTransaction(transaction_id, description, amount):
         print(f"Error updating: {e}")
     finally:
         conn.close()
-
 def editTransactionSafe(t_id, new_desc, new_amount, new_account_id=None, new_category_id=None):
     conn = db.connectToDatabase()
     cursor = conn.cursor()
@@ -177,7 +176,7 @@ def editTransactionSafe(t_id, new_desc, new_amount, new_account_id=None, new_cat
             cursor.execute("UPDATE Accounts SET account_balance = account_balance + ? WHERE account_id = ?", (new_amount, final_acc_id))
 
         conn.commit()
-        print(f"✅ Edit Success: Reverted {old_amount} ({old_type}) -> Applied {new_amount} ({new_type})")
+        print(f"Edit Success: Reverted {old_amount} ({old_type}) -> Applied {new_amount} ({new_type})")
 
     except Exception as e:
         conn.rollback()

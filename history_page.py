@@ -351,38 +351,75 @@ class HistoryPage(ctk.CTkTabview):
 class EditPopup(ctk.CTkToplevel):
     def __init__(self, master, t_id, old_desc, old_amount, callback_refresh):
         super().__init__(master)
-        self.title("แก้ไขรายการ")
-        self.geometry("300x200")
-        
-        self.t_id = t_id
-        self.callback_refresh = callback_refresh # ฟังก์ชันที่จะเรียกเมื่อบันทึกเสร็จ
+        self.title("แก้ไขรายการแบบละเอียด")
+        self.geometry("400x450")
 
-        # UI แก้ไขง่ายๆ
-        ctk.CTkLabel(self, text="รายการ:").pack(pady=5)
-        self.entry_desc = ctk.CTkEntry(self)
-        self.entry_desc.insert(0, old_desc) # ใส่ค่าเดิม
+        self.t_id = t_id
+        self.callback_refresh = callback_refresh
+
+        
+        self.accounts_map = { row["account_name"]: row["account_id"] for row in db.getDB("Accounts") }
+        self.categories_map = { row["category_name"]: row["category_id"] for row in db.getDB("Categories") }
+
+        conn = db.connectToDatabase()
+        cursor = conn.cursor()
+        cursor.execute("SELECT account_id, category_id FROM Transactions WHERE transaction_id = ?", (t_id,))
+        current_data = cursor.fetchone()
+        conn.close()
+
+        current_acc_id = current_data['account_id']
+        current_cat_id = current_data['category_id']
+
+
+        current_acc_name = [name for name, id in self.accounts_map.items() if id == current_acc_id][0]
+        current_cat_name = [name for name, id in self.categories_map.items() if id == current_cat_id][0]
+
+        ctk.CTkLabel(self, text="รายการ:").pack(pady=(15, 5))
+        self.entry_desc = ctk.CTkEntry(self, width=250)
+        self.entry_desc.insert(0, old_desc)
         self.entry_desc.pack(pady=5)
 
         ctk.CTkLabel(self, text="จำนวนเงิน:").pack(pady=5)
-        self.entry_amount = ctk.CTkEntry(self)
-        self.entry_amount.insert(0, str(old_amount)) # ใส่ค่าเดิม
+        self.entry_amount = ctk.CTkEntry(self, width=250)
+        self.entry_amount.insert(0, str(old_amount))
         self.entry_amount.pack(pady=5)
 
-        ctk.CTkButton(self, text="บันทึก", command=self.save_edit, fg_color="green").pack(pady=20)
+        ctk.CTkLabel(self, text="บัญชี / กระเป๋า:").pack(pady=5)
+        self.combo_account = ctk.CTkComboBox(self, width=250, values=list(self.accounts_map.keys()))
+        self.combo_account.set(current_acc_name)
+        self.combo_account.pack(pady=5)
+
+        ctk.CTkLabel(self, text="หมวดหมู่:").pack(pady=5)
+        self.combo_category = ctk.CTkComboBox(self, width=250, values=list(self.categories_map.keys()))
+        self.combo_category.set(current_cat_name)
+        self.combo_category.pack(pady=5)
+
+        ctk.CTkButton(self, text="บันทึกการแก้ไข", command=self.save_edit, fg_color="green", width=250).pack(pady=20)
         
-        # ทำให้หน้าต่างนี้อยู่บนสุดเสมอ
         self.attributes("-topmost", True)
 
     def save_edit(self):
         new_desc = self.entry_desc.get()
+        acc_name = self.combo_account.get()
+        cat_name = self.combo_category.get()
         
         try:
             new_amt = float(self.entry_amount.get())
         except ValueError:
-            print("Error: Please enter a valid number")
+            print("Error: ตัวเลขไม่ถูกต้อง")
             return
 
-        db_func.editTransactionSafe(self.t_id, new_desc, new_amt)
-        
+        new_acc_id = self.accounts_map.get(acc_name)
+        new_cat_id = self.categories_map.get(cat_name)
+
+        print(f"Saving Edit... Acc: {new_acc_id}, Cat: {new_acc_id}")
+        db_func.editTransactionSafe(
+            t_id=self.t_id, 
+            new_desc=new_desc, 
+            new_amount=new_amt, 
+            new_account_id=new_acc_id, 
+            new_category_id=new_cat_id
+        )
+
         self.callback_refresh()
-        self.destroy() # ปิดหน้าต่าง
+        self.destroy()
