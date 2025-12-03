@@ -45,8 +45,21 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
     accounts_map_balance = { row["account_id"]: row["account_balance"] for row in db.getDB("Accounts") }
     from_acc_balance = accounts_map_balance[from_acc_id]
     to_acc_balance = accounts_map_balance[to_acc_id]
-    CAT_OUT_ID = 99 
-    CAT_IN_ID = 100
+    
+    raw_cat_out = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfrom_from",))
+    if raw_cat_out:
+        CAT_OUT_ID = raw_cat_out[0]["category_id"]
+    else:
+        print("Error: ไม่พบหมวดโอนเงินออก!")
+        return
+
+    # 2. ค้นหา ID ของหมวด "ได้รับเงินโอน" (transfrom_to)
+    raw_cat_in = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfrom_to",))
+    if raw_cat_in:
+        CAT_IN_ID = raw_cat_in[0]["category_id"]
+    else:
+        print("Error: ไม่พบหมวดรับเงินโอน!")
+        return
     addTransaction(description = f"โอนไป {to_acc_id} ({desc})", 
                    amount = amount, 
                    category_id = CAT_OUT_ID,
@@ -107,8 +120,6 @@ def deleteTransaction(transaction_id):
     conn = db.connectToDatabase()
     cursor = conn.cursor()
     try:
-        # ก่อนลบ Transaction ต้องไปแก้เงินคืนใน Account ก่อน (ถ้าเคร่งครัด)
-        # แต่เพื่อความง่ายตอนนี้ ลบเลยละกัน
         cursor.execute("DELETE FROM Transactions WHERE transaction_id = ?", (transaction_id,))
         conn.commit()
     except Exception as e:

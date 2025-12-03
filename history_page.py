@@ -294,14 +294,24 @@ class accountHistoryTable(ctk.CTkFrame):
         db_func.deleteTransaction(t_id)
         acc_id = self.accounts_map.get(account_name, 0)
         acc_balance = self.accounts_map_balance.get(account_name, 0)
-        print(type)
+        # print(type)
 
         diff = 0
-        if type == "income":
+        if type == "income" or type == "transfrom_to": # เช็คตัวสะกดให้ตรงกับใน DB เป๊ะๆ
             diff = -amount 
+
+            print("in")
+            
+        # เช็คเคสที่ต้อง "คืนเงินกลับ" (รายจ่าย / โอนออก)
+        elif type == "expense" or type == "transfrom_from":
+            diff = amount
+            print("ex")
+            
+        # ป้องกันเคส type หลุด หรือ error
         else:
-            diff = amount 
-        
+            print(f"Unknown Type: {type} - No balance change")
+            diff = 0
+        print(diff)
         db_func.changeBalanceInAccount(balance = acc_balance + diff, 
                                        id = acc_id)
         self.refresh_table()

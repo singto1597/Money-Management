@@ -33,6 +33,8 @@
 
 
   "default_categories": [
+    { "name": "โอนเงินไป", "type": "transfrom_from" },
+    { "name": "ได้รับเงินโอน", "type": "transfrom_to" },
     { "name": "อาหาร", "type": "expense" },
     { "name": "วัตถุดิบ", "type": "expense" },
     { "name": "ขนม", "type": "expense" },
