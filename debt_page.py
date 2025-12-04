@@ -102,7 +102,7 @@ class DebtPage(ctk.CTkFrame):
         ctk.CTkLabel(card, text=display_bal, font=("Arial", 14, "bold"), text_color=text_color).pack(side="right", padx=10)
 
         # ปุ่ม Settle (แสดงเฉพาะตอนมียอดค้าง)
-        if balance != 0:
+        if abs(balance) > 0.01:
             btn_settle = ctk.CTkButton(card, text="ชำระ/เคลียร์", width=80, height=25, 
                                        fg_color="orange", hover_color="darkorange",
                                        command=lambda: self.on_click_settle(settle_from, settle_to, settle_amount))

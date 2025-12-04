@@ -37,14 +37,12 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน", 
     conn = db.connectToDatabase()
     cursor = conn.cursor()
     try:
-        # 1. หาชื่อบัญชี จาก ID ที่ส่งมา
         cursor.execute("SELECT account_name FROM Accounts WHERE account_id = ?", (from_acc_id,))
         from_acc_name = cursor.fetchone()['account_name']
         
         cursor.execute("SELECT account_name FROM Accounts WHERE account_id = ?", (to_acc_id,))
         to_acc_name = cursor.fetchone()['account_name']
 
-        # 2. หา ID หมวดหมู่ (แก้คำผิด transfrom เป็น transfer ให้แล้วนะครับ)
         cursor.execute("SELECT category_id FROM Categories WHERE category_type='transfer_from'") # หรือ transfrom_from ตาม DB คุณ
         cat_out_data = cursor.fetchone()
         cat_out = cat_out_data['category_id'] if cat_out_data else None
@@ -53,28 +51,33 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน", 
         cat_in_data = cursor.fetchone()
         cat_in = cat_in_data['category_id'] if cat_in_data else None
 
-        # 3. กำหนดวันที่ (ถ้าไม่ส่งมา ให้ใช้วันปัจจุบัน)
         record_time = date_input if date_input else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # 4. บันทึก Transaction (ใช้ชื่อบัญชีใน Description แล้ว!)
-        # ขาออก
+        cursor.execute("SELECT MAX(transfer_group_id) FROM Transactions")
+        row = cursor.fetchone()
+        # ถ้าไม่มีข้อมูล (None) ให้เริ่มที่ 0, ถ้ามีให้เอาค่าเดิมมา
+        last_group_id = row[0] if row[0] is not None else 0
+        new_group_id = last_group_id + 1
+
         cursor.execute("""
             INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id) 
             VALUES (?, ?, ?, ?, ?)""",
             (record_time, f"โอนไป {to_acc_name} ({desc})", cat_out, -amount, from_acc_id)) # สังเกต amount ติดลบ
         
-        # ตัดเงินต้นทาง
+        cursor.execute("""
+            INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id, transfer_group_id) 
+            VALUES (?, ?, ?, ?, ?, ?)""",
+            (record_time, f"โอนไป {to_acc_name} ({desc})", cat_out, -amount, from_acc_id, new_group_id))
+        
         cursor.execute("UPDATE Accounts SET account_balance = account_balance - ? WHERE account_id = ?", (amount, from_acc_id))
 
-        # ขาเข้า
+        # [ขาเข้า]
         cursor.execute("""
-            INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id) 
-            VALUES (?, ?, ?, ?, ?)""",
-            (record_time, f"ได้รับจาก {from_acc_name} ({desc})", cat_in, amount, to_acc_id)) # amount บวก
+            INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id, transfer_group_id) 
+            VALUES (?, ?, ?, ?, ?, ?)""",
+            (record_time, f"ได้รับจาก {from_acc_name} ({desc})", cat_in, amount, to_acc_id, new_group_id))
         
-        # เพิ่มเงินปลายทาง
         cursor.execute("UPDATE Accounts SET account_balance = account_balance + ? WHERE account_id = ?", (amount, to_acc_id))
-
         conn.commit()
         print(f"Transfer Success: {from_acc_name} -> {to_acc_name} ({amount})")
         
