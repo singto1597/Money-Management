@@ -14,6 +14,19 @@ def addAccount(nameOfAccount, typeOfAccount, initial_balance = 0):
     columnWillInsert = "(account_name, account_type, account_balance)"
     valueWillInsert = (nameOfAccount, typeOfAccount, initial_balance)
     db.insertInfoIntoTable(tableName, columnWillInsert, valueWillInsert)
+    if initial_balance > 0:
+        conn = db.connectToDatabase()
+        cursor = conn.cursor()
+        cursor.execute("SELECT account_id FROM Accounts WHERE account_name = ?", (nameOfAccount,))
+        acc_id = cursor.fetchone()['account_id']
+        conn.close()
+
+        addTransaction(
+            description="ยอดยกมา (Initial Balance)", 
+            category_id=13,
+            amount=initial_balance, 
+            account_id=acc_id
+        )
 def deleteAccount(nameOfAccount):
     tableName = "Accounts"
     db.deleteInfoIntoTable(tableName, "account_name = ?", (nameOfAccount,))

@@ -47,7 +47,9 @@
 
     { "name": "เงินประจำวัน", "type": "income" },
     { "name": "รายได้พิเศษ", "type": "income" },
-    { "name": "อื่นๆ", "type": "income" }
+    { "name": "อื่นๆ", "type": "income" },
+    { "name": "ยอดยกมา", "type": "income" }
+    
 
     
   ],

@@ -365,10 +365,24 @@ class EditPopup(ctk.CTkToplevel):
         cursor = conn.cursor()
         cursor.execute("SELECT account_id, category_id FROM Transactions WHERE transaction_id = ?", (t_id,))
         current_data = cursor.fetchone()
+        
         conn.close()
+
 
         current_acc_id = current_data['account_id']
         current_cat_id = current_data['category_id']
+
+        conn = db.connectToDatabase()
+        cursor = conn.cursor()
+        cursor.execute("SELECT category_type FROM Categories WHERE category_id = ?", (current_cat_id,))
+        cat_type = cursor.fetchone()['category_type']
+        conn.close()
+
+        if cat_type in ['transfer_from', 'transfer_to']:
+            ctk.CTkLabel(self, text="⚠️ รายการโอนเงินไม่สามารถแก้ไขได้\nกรุณาลบแล้วทำรายการใหม่", 
+                         text_color="red", font=("Arial", 14)).pack(pady=20)
+            self.attributes("-topmost", True)
+            return
 
 
         current_acc_name = [name for name, id in self.accounts_map.items() if id == current_acc_id][0]

@@ -47,7 +47,7 @@ class ManageAccountsFrame(ctk.CTkFrame):
             row.pack(fill="x", pady=2)
 
             # แสดงชื่อและประเภท
-            info_text = f"{acc['account_name']} ({acc['account_type']})\nเริ่ม: {acc.get('initial_balance', 0):,.2f}"
+            info_text = f"{acc['account_name']} ({acc['account_type']})\nมีเงิน: {acc.get('account_balance', 0):,.2f}"
             ctk.CTkLabel(row, text=info_text, anchor="w").pack(side="left", padx=5)
 
             # ปุ่มลบ
