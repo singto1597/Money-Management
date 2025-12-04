@@ -6,6 +6,9 @@ import customtkinter as ctk
 import db
 import db_function as db_func
 
+from tkcalendar import DateEntry
+from datetime import datetime
+
 class PaymentRow(ctk.CTkFrame):
     def __init__(self, master, account_map, default_amount="", **kwargs):
         super().__init__(master, **kwargs)
@@ -154,66 +157,84 @@ class TransferFrame(ctk.CTkFrame):
         acc_names = list(self.accounts_map.keys())
 
         self.grid_columnconfigure(1, weight=1)
-        self.reload_from_db()
 
-        self.lbl_from = ctk.CTkLabel(self, text="จากกระเป๋า:")
-        self.combo_from = ctk.CTkComboBox(self, values=acc_names, command = self.update_from_account_balance)
-
-        self.from_balance = list(self.accounts_map_balance.values())[0]
-        self.lbl_from_balance = ctk.CTkLabel(master = self, text = f"มีจำนวนเงิน {self.from_balance}")
+        # --- แถว 0: วันที่ (Date Picker) ---
+        self.lbl_date = ctk.CTkLabel(self, text="วันที่:")
+        self.lbl_date.grid(row=0, column=0, padx=20, pady=10, sticky="e")
         
+        # DateEntry เป็น Widget ของ tkcalendar (ไม่ใช่ ctk) แต่ใช้ร่วมกันได้
+        self.date_entry = DateEntry(self, width=12, background='darkblue',
+                                    foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+        self.date_entry.grid(row=0, column=1, padx=20, pady=10, sticky="w")
 
+        # --- แถว 1: จากกระเป๋า ---
+        self.lbl_from = ctk.CTkLabel(self, text="จากกระเป๋า:")
+        self.combo_from = ctk.CTkComboBox(self, values=acc_names, command=self.update_from_account_balance)
+        self.lbl_from_balance = ctk.CTkLabel(master=self, text="...")
+        
+        self.lbl_from.grid(row=1, column=0, padx=20, pady=10, sticky="e")
+        self.combo_from.grid(row=1, column=1, padx=20, pady=10, sticky="ew")
+        self.lbl_from_balance.grid(row=2, column=1, padx=20, pady=0, sticky="w")
+
+        # --- แถว 3: ไปกระเป๋า ---
         self.lbl_to = ctk.CTkLabel(self, text="ไปกระเป๋า:")
-        self.combo_to = ctk.CTkComboBox(self, values=acc_names, command = self.update_to_account_balance)
+        self.combo_to = ctk.CTkComboBox(self, values=acc_names, command=self.update_to_account_balance)
+        self.lbl_to_balance = ctk.CTkLabel(master=self, text="...")
 
-        self.to_balance = list(self.accounts_map_balance.values())[0]
-        self.lbl_to_balance = ctk.CTkLabel(master = self, text = f"มีจำนวนเงิน {self.to_balance}")
+        self.lbl_to.grid(row=3, column=0, padx=20, pady=10, sticky="e")
+        self.combo_to.grid(row=3, column=1, padx=20, pady=10, sticky="ew")
+        self.lbl_to_balance.grid(row=4, column=1, padx=20, pady=0, sticky="w")
 
-
-
+        # --- แถว 5: จำนวนเงิน ---
         self.lbl_amt = ctk.CTkLabel(self, text="จำนวนเงิน:")
         self.entry_amt = ctk.CTkEntry(self, placeholder_text="0.00")
+        
+        self.lbl_amt.grid(row=5, column=0, padx=20, pady=10, sticky="e")
+        self.entry_amt.grid(row=5, column=1, padx=20, pady=10, sticky="ew")
 
-        self.btn_submit = ctk.CTkButton(self, text="ยืนยันการโอน", command=self.submit_transfer, fg_color="orange", hover_color="darkorange")
+        # --- ปุ่ม ---
+        self.btn_submit = ctk.CTkButton(self, text="ยืนยันการโอน", command=self.submit_transfer, fg_color="orange")
+        self.btn_submit.grid(row=6, column=0, columnspan=2, padx=20, pady=20, sticky="ew")
+        
+        self.update_view()
 
+    def set_transfer_data(self, from_acc, to_acc, amount):
+        """ฟังก์ชันสำหรับรับค่าจากหน้า Settle มากรอกให้อัตโนมัติ"""
+        self.update_view()
+        
+        if from_acc: self.combo_from.set(from_acc)
+        if to_acc: self.combo_to.set(to_acc)
+        
+        self.entry_amt.delete(0, "end")
+        if amount: self.entry_amt.insert(0, str(amount))
+        
+        self.update_from_account_balance(from_acc)
+        self.update_to_account_balance(to_acc)
 
-
-        self.lbl_from.grid(row=0, column=0, padx=20, pady=10, sticky="e")
-        self.combo_from.grid(row=0, column=1, padx=20, pady=10, sticky="ew")
-        self.lbl_from_balance.grid(row=1, column=1, padx=20, pady=10, sticky="w")
-
-
-        self.lbl_to.grid(row=2, column=0, padx=20, pady=10, sticky="e")
-        self.combo_to.grid(row=2, column=1, padx=20, pady=10, sticky="ew")
-        self.lbl_to_balance.grid(row=3, column=1, padx=20, pady=10, sticky="w")
-
-        self.lbl_amt.grid(row=4, column=0, padx=20, pady=10, sticky="e")
-        self.entry_amt.grid(row=4, column=1, padx=20, pady=10, sticky="ew")
-
-        self.btn_submit.grid(row=5, column=0, columnspan=2, padx=20, pady=20, sticky="ew")
     def submit_transfer(self):
         acc_from_name = self.combo_from.get()
         acc_to_name = self.combo_to.get()
         amount = self.entry_amt.get()
+        
+        selected_date = self.date_entry.get_date() 
+        full_datetime = selected_date.strftime('%Y-%m-%d') + datetime.now().strftime(' %H:%M:%S')
 
         if not amount: return
-        amount = float(amount)
-        if amount == 0: return
-        if acc_from_name == acc_to_name: return
-        print(f"โอน {amount} จาก {acc_from_name} -> {acc_to_name}")
-        db_func.transferMoney(amount = amount, 
-                              from_acc_id = self.accounts_map.get(acc_from_name), 
-                              to_acc_id = self.accounts_map.get(acc_to_name))
-        
-        current_balance = self.accounts_map_balance.get(acc_from_name, 0)
-        new_balance = current_balance - amount
-        self.accounts_map_balance[acc_from_name] = new_balance
-        self.update_from_account_balance(acc_from_name)
+        try:
+            amount = float(amount)
+        except ValueError: return
 
-        current_balance = self.accounts_map_balance.get(acc_to_name, 0)
-        new_balance = current_balance + amount
-        self.accounts_map_balance[acc_to_name] = new_balance
-        self.update_to_account_balance(acc_to_name)
+        if amount == 0 or acc_from_name == acc_to_name: return
+
+        # ส่ง full_datetime ไปบันทึก
+        db_func.transferMoney(amount=amount, 
+                              from_acc_id=self.accounts_map.get(acc_from_name), 
+                              to_acc_id=self.accounts_map.get(acc_to_name),
+                              date_input=full_datetime) # <--- ส่งวันที่ไป
+        
+        self.entry_amt.delete(0, "end")
+        self.update_view()
+        print("โอนสำเร็จ!")
     def update_from_account_balance(self, choise):
         self.from_balance = self.accounts_map_balance.get(choise, 0)
         self.lbl_from_balance.configure(text=f"มีจำนวนเงิน {self.from_balance}")
@@ -249,3 +270,7 @@ class AddPage(ctk.CTkTabview):
     def refresh_data(self):
         self.general_frame.update_view()
         self.transfer_frame.update_view()
+    def switch_to_transfer_and_fill(self, from_acc, to_acc, amount):
+        """ฟังก์ชันกระโดดมาแท็บโอนเงินและกรอกข้อมูล"""
+        self.set("โอนเงิน") # สลับแท็บ
+        self.transfer_frame.set_transfer_data(from_acc, to_acc, amount)
