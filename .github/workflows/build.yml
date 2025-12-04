@@ -36,16 +36,15 @@ jobs:
     - name: Build EXE (Windows)
       if: runner.os == 'Windows'
       run: |
-        # ใช้ ; คั่น path
-        pyinstaller --noconfirm --onefile --windowed --name "MoneyManager" --add-data "config;config" app.py
+        # เพิ่ม --hidden-import "PIL._tkinter_finder"
+        pyinstaller --noconfirm --onefile --windowed --name "MoneyManager" --add-data "config;config" --hidden-import "PIL._tkinter_finder" app.py
 
     # --- ส่วนของ Linux ---
     - name: Build Binary (Linux)
       if: runner.os == 'Linux'
       run: |
-        # ใช้ : คั่น path
-        pyinstaller --noconfirm --onefile --windowed --name "MoneyManager" --add-data "config:config" app.py
-
+        # เพิ่ม --hidden-import "PIL._tkinter_finder"
+        pyinstaller --noconfirm --onefile --windowed --name "MoneyManager" --add-data "config:config" --hidden-import "PIL._tkinter_finder" app.py
     # --- แพ็คของเตรียมส่ง (Windows) ---
     - name: Zip Artifact (Windows)
       if: runner.os == 'Windows'
