@@ -3,7 +3,7 @@ import db
 import db_function as db_func
 
 class DebtPage(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, on_settle_callback=None, **kwargs):
         super().__init__(master, **kwargs)
         
         # Grid Layout
@@ -38,6 +38,8 @@ class DebtPage(ctk.CTkFrame):
         # ยอดรวมเจ้าหนี้
         self.total_pay_label = ctk.CTkLabel(self.payable_frame, text="รวม: 0.00 บาท", font=("Arial", 14, "bold"))
         self.total_pay_label.pack(pady=10)
+
+        self.on_settle_callback = on_settle_callback
 
         # ปุ่ม Refresh (หรือจะเรียกจากนอก class ก็ได้)
         # self.refresh_data() # เรียกตอน init หรือให้ app.py เรียก
@@ -75,15 +77,37 @@ class DebtPage(ctk.CTkFrame):
         card = ctk.CTkFrame(parent)
         card.pack(fill="x", pady=5, padx=5)
         
+        # ชื่อและยอดเงิน
         ctk.CTkLabel(card, text=name, font=("Arial", 14)).pack(side="left", padx=10, pady=10)
         
+        display_bal = f"{balance:,.2f}"
+        text_color = "black" # Default
+        
+        settle_from = ""
+        settle_to = ""
+        settle_amount = abs(balance) # ยอดที่จะโอนต้องเป็นบวกเสมอ
+
         if type == 'receivable':
-            # ลูกหนี้: ถ้า balance > 0 แสดงว่าเขายังคืนไม่ครบ
             text_color = "green" if balance > 0 else "gray"
             display_bal = f"+{balance:,.2f}"
-        else:
-            # เจ้าหนี้: ถ้า balance < 0 แสดงว่าเรายังติดหนี้
+            settle_from = name 
+            settle_to = ""  
+            
+        else: # payable
             text_color = "red" if balance < 0 else "gray"
-            display_bal = f"{balance:,.2f}" # ยอดมันลบอยู่แล้ว
+            # ยอดเจ้าหนี้มักติดลบ
+            settle_from = ""   # (ให้ User เลือกเองว่าจะเอาเงินไหนจ่าย)
+            settle_to = name   # จ่ายไปให้เขา
 
         ctk.CTkLabel(card, text=display_bal, font=("Arial", 14, "bold"), text_color=text_color).pack(side="right", padx=10)
+
+        # ปุ่ม Settle (แสดงเฉพาะตอนมียอดค้าง)
+        if balance != 0:
+            btn_settle = ctk.CTkButton(card, text="ชำระ/เคลียร์", width=80, height=25, 
+                                       fg_color="orange", hover_color="darkorange",
+                                       command=lambda: self.on_click_settle(settle_from, settle_to, settle_amount))
+            btn_settle.pack(side="right", padx=5)
+
+    def on_click_settle(self, f, t, a):
+        if self.on_settle_callback:
+            self.on_settle_callback(f, t, a)
