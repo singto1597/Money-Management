@@ -4,17 +4,17 @@
 
 โปรเจกต์นี้เขียนด้วย **Python** ล้วนๆ รันบน **Linux (Ubuntu)** เป็นหลัก แต่ก็ใจดีทำไฟล์ **.exe** ให้ชาว Windows ใช้ด้วยนะ จริงๆคนส่วนใหญ่ก็ใช้ Windows แหละ ก็เลยทำมาให้
 
-![Screenshot](https://github.com/singto1597/Money-Management/raw/picture_program/add_page.png)
+![Screenshot](https://github.com/singto1597/Money-Management/blob/main/raw/picture_program/add_page.png)
 *(รูปประกอบ: หน้าตาการบันทึกข้อมูล )*
 
-![Screenshot](https://github.com/singto1597/Money-Management/raw/picture_program/history_page.png)
-*(รูปประกอบ: หน้าตาการบันทึกข้อมูล )*
+![Screenshot](https://github.com/singto1597/Money-Management/blob/main/raw/picture_program/history_page.png)
+*(รูปประกอบ: หน้าตาประวัติการทำรายการ )*
 
-![Screenshot](https://github.com/singto1597/Money-Management/raw/picture_program/accounts_page.png)
-*(รูปประกอบ: หน้าตาการบันทึกข้อมูล )*
+![Screenshot](https://github.com/singto1597/Money-Management/blob/main/raw/picture_program/accounts_page.png)
+*(รูปประกอบ: หน้าตาเงินรายบัญชี )*
 
-![Screenshot](https://github.com/singto1597/Money-Management/raw/picture_program/edit_page.png)
-*(รูปประกอบ: หน้าตาการบันทึกข้อมูล )*
+![Screenshot](https://github.com/singto1597/Money-Management/blob/main/raw/picture_program/edit_page.png)
+*(รูปประกอบ: หน้าตาการจัดการบัญชีและหมวดหมู่ )*
 
 ## ✨ ฟีเจอร์
 
