@@ -17,8 +17,7 @@ class ManageAccountsFrame(ctk.CTkFrame):
 
         self.entry_name = ctk.CTkEntry(self.input_frame, placeholder_text="ชื่อบัญชี (เช่น กสิกร, กระปุกหมู)")
         self.entry_name.pack(side="top", fill="x", pady=2)
-
-        self.combo_type = ctk.CTkComboBox(self.input_frame, values=["cash", "bank", "saving"])
+        self.combo_type = ctk.CTkComboBox(self.input_frame, values=["cash", "bank", "saving", "receivable", "payable"])
         self.combo_type.set("cash")
         self.combo_type.pack(side="top", fill="x", pady=2)
 

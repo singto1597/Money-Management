@@ -35,6 +35,7 @@
   "default_categories": [
     { "name": "โอนเงินไป", "type": "transfrom_from" },
     { "name": "ได้รับเงินโอน", "type": "transfrom_to" },
+
     { "name": "อาหาร", "type": "expense" },
     { "name": "วัตถุดิบ", "type": "expense" },
     { "name": "ขนม", "type": "expense" },
@@ -47,12 +48,16 @@
     { "name": "เงินประจำวัน", "type": "income" },
     { "name": "รายได้พิเศษ", "type": "income" },
     { "name": "อื่นๆ", "type": "income" }
+
+    
   ],
 
   "default_accounts": [
     { "name": "เงินสด", "type": "cash", "initial_balance": 0},
     { "name": "ออมสิน", "type": "saving", "initial_balance": 0},
     { "name": "True Money", "type": "bank", "initial_balance": 0},
-    { "name": "ธนาคาร", "type": "bank", "initial_balance": 0}
+    { "name": "ธนาคาร", "type": "bank", "initial_balance": 0},
+    { "name": "ลูกหนี้", "type": "receivable", "initial_balance": 0},
+    { "name": "เจ้าหนี้", "type": "payable", "initial_balance": 0}
   ]
 }

@@ -53,8 +53,21 @@ class StatsGraphFrame(ctk.CTkFrame):
              ctk.CTkLabel(self.chart_container, text="ยังไม่มีข้อมูลรายจ่าย", font=("Arial", 16)).pack(pady=50)
              return
 
-        labels = [row['category_name'] for row in data]
-        sizes = [row['total_amount'] for row in data]
+        # --- 🛠️ ส่วนที่แก้: กรองข้อมูล (Filter) ---
+        # สร้าง list ใหม่ ที่ "ไม่เอา" ชื่อหมวดหมู่ที่เกี่ยวกับการโอน
+        # หมายเหตุ: ต้องใช้ "ชื่อไทย" ที่โชว์ในกราฟนะครับ ไม่ใช่ type
+        ignore_names = ["โอนเงินไป", "ได้รับเงินโอน", "ปรับปรุงยอด"] 
+        
+        filtered_data = [row for row in data if row['category_name'] not in ignore_names]
+
+        # ถ้ากรองแล้วไม่เหลืออะไรเลย
+        if not filtered_data:
+             ctk.CTkLabel(self.chart_container, text="ไม่มีข้อมูลรายจ่าย (ไม่รวมโอน)", font=("Arial", 16)).pack(pady=50)
+             return
+
+        # แยกข้อมูลจากตัวที่กรองแล้ว
+        labels = [row['category_name'] for row in filtered_data]
+        sizes = [row['total_amount'] for row in filtered_data]
         
         colors = ['#ff9999','#66b3ff','#99ff99','#ffcc99', '#c2c2f0','#ffb3e6']
 
@@ -150,7 +163,7 @@ class MonthlyBarGraphFrame(ctk.CTkFrame):
         expense_data = {}
         for t in transactions:
             # เอาเฉพาะรายจ่าย (expense) และการโอนออก (transfrom_from)
-            if t['category_type'] == 'expense' or t['category_type'] == 'transfrom_from':
+            if t['category_type'] == 'expense':
                 cat_name = t['category_name']
                 amount = t['amount']
                 
