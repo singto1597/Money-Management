@@ -119,7 +119,7 @@ class ManageCategoriesFrame(ctk.CTkFrame):
         # เรียงลำดับ income ขึ้นก่อน หรือจะแยกสีก็ได้
         for cat in categories:
             # ไม่แสดงหมวดระบบ (โอนเงิน) เพื่อป้องกันการลบผิด
-            if cat['category_type'] in ['transfrom_from', 'transfrom_to']:
+            if cat['category_type'] in ['transfer_from', 'transfer_to']:
                 continue
 
             row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")

@@ -137,12 +137,12 @@ class allHistoryTable(ctk.CTkFrame):
         acc_balance = self.accounts_map_balance.get(account_name, 0)
 
         diff = 0
-        if type == "income" or type == "transfrom_to": 
+        if type == "income" or type == "transfer_to": 
             diff = -amount 
 
             print("in")
             
-        elif type == "expense" or type == "transfrom_from":
+        elif type == "expense" or type == "transfer_from":
             diff = amount
             print("ex")
             
@@ -301,12 +301,12 @@ class accountHistoryTable(ctk.CTkFrame):
         acc_balance = self.accounts_map_balance.get(account_name, 0)
 
         diff = 0
-        if type == "income" or type == "transfrom_to": 
+        if type == "income" or type == "transfer_to": 
             diff = -amount 
 
             print("in")
             
-        elif type == "expense" or type == "transfrom_from":
+        elif type == "expense" or type == "transfer_from":
             diff = amount
             print("ex")
             

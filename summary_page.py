@@ -162,7 +162,7 @@ class MonthlyBarGraphFrame(ctk.CTkFrame):
         # 3. รวมยอดเงินแยกตามหมวดหมู่ (Aggregation in Python)
         expense_data = {}
         for t in transactions:
-            # เอาเฉพาะรายจ่าย (expense) และการโอนออก (transfrom_from)
+            # เอาเฉพาะรายจ่าย (expense) และการโอนออก (transfer_from)
             if t['category_type'] == 'expense':
                 cat_name = t['category_name']
                 amount = t['amount']

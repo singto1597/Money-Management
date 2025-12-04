@@ -38,15 +38,14 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
     from_acc_balance = accounts_map_balance[from_acc_id]
     to_acc_balance = accounts_map_balance[to_acc_id]
     
-    raw_cat_out = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfrom_from",))
+    raw_cat_out = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfer_from",))
     if raw_cat_out:
         CAT_OUT_ID = raw_cat_out[0]["category_id"]
     else:
         print("Error: ไม่พบหมวดโอนเงินออก!")
         return
-
-    # 2. ค้นหา ID ของหมวด "ได้รับเงินโอน" (transfrom_to)
-    raw_cat_in = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfrom_to",))
+    
+    raw_cat_in = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfer_to",))
     if raw_cat_in:
         CAT_IN_ID = raw_cat_in[0]["category_id"]
     else:
@@ -154,9 +153,9 @@ def editTransactionSafe(t_id, new_desc, new_amount, new_account_id=None, new_cat
         final_acc_id = new_account_id if new_account_id else old_acc_id
         final_cat_id = new_category_id if new_category_id else old_data['category_id']
 
-        if old_type == 'expense' or old_type == 'transfrom_from':
+        if old_type == 'expense' or old_type == 'transfer_from':
             cursor.execute("UPDATE Accounts SET account_balance = account_balance + ? WHERE account_id = ?", (old_amount, old_acc_id))
-        elif old_type == 'income' or old_type == 'transfrom_to':
+        elif old_type == 'income' or old_type == 'transfer_to':
             cursor.execute("UPDATE Accounts SET account_balance = account_balance - ? WHERE account_id = ?", (old_amount, old_acc_id))
 
         cursor.execute("SELECT category_type FROM Categories WHERE category_id = ?", (final_cat_id,))
@@ -170,9 +169,9 @@ def editTransactionSafe(t_id, new_desc, new_amount, new_account_id=None, new_cat
         """
         cursor.execute(sql_update_t, (new_desc, new_amount, final_acc_id, final_cat_id, t_id))
 
-        if new_type == 'expense' or new_type == 'transfrom_from':
+        if new_type == 'expense' or new_type == 'transfer_from':
             cursor.execute("UPDATE Accounts SET account_balance = account_balance - ? WHERE account_id = ?", (new_amount, final_acc_id))
-        elif new_type == 'income' or new_type == 'transfrom_to':
+        elif new_type == 'income' or new_type == 'transfer_to':
             cursor.execute("UPDATE Accounts SET account_balance = account_balance + ? WHERE account_id = ?", (new_amount, final_acc_id))
 
         conn.commit()
@@ -193,7 +192,7 @@ def getExpenseBreakdown():
             SELECT C.category_name, SUM(T.amount) as total_amount
             FROM Transactions T
             JOIN Categories C ON T.category_id = C.category_id
-            WHERE C.category_type = 'expense' OR C.category_type = 'transfrom_from'
+            WHERE C.category_type = 'expense' OR C.category_type = 'transfer_from'
             GROUP BY C.category_name
             ORDER BY total_amount DESC
         """
