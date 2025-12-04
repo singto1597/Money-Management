@@ -110,10 +110,10 @@ class allHistoryTable(ctk.CTkFrame):
                 l3 = ctk.CTkLabel(self.table_frame, text=row['category_name'])
                 l4 = ctk.CTkLabel(self.table_frame, text=amount_text, text_color=amount_color)
           
-                btn_edit = ctk.CTkButton(self.table_frame, text="✏️", width=30, fg_color="orange", command=cmd_edit)
+                btn_edit = ctk.CTkButton(self.table_frame, text="E", width=30, fg_color="orange", command=cmd_edit)
                 
           
-                btn_delete = ctk.CTkButton(self.table_frame, text="🗑️", width=30, fg_color="red", command=cmd_delete)
+                btn_delete = ctk.CTkButton(self.table_frame, text="X", width=30, fg_color="red", command=cmd_delete)
 
 
 

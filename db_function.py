@@ -33,7 +33,7 @@ def addTransaction(description, category_id = None, amount = 0, account_id = Non
 
     valueWillInsert = (record_time, description, category_id, amount, account_id, transfer_group_id)
     db.insertInfoIntoTable(tableName, columnWillInsert, valueWillInsert)
-def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน", date_input=None): # <--- รับ date_input เพิ่ม
+def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน", date_input=None):
     conn = db.connectToDatabase()
     cursor = conn.cursor()
     try:

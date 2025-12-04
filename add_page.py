@@ -57,31 +57,38 @@ class TransactionFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=0) 
         self.grid_columnconfigure(1, weight=1) 
 
-        # --- ส่วนหัว: ประเภท, รายการ, หมวดหมู่ ---
-        ctk.CTkLabel(self, text="ประเภท:").grid(row=0, column=0, padx=20, pady=10, sticky="e")
+        ctk.CTkLabel(self, text="วันที่:").grid(row=0, column=0, padx=20, pady=10, sticky="e")
+        self.date_entry = DateEntry(self, width=12, background='darkblue',
+                                    foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+        self.date_entry.grid(row=0, column=1, padx=20, pady=10, sticky="w")
+
+        
+        ctk.CTkLabel(self, text="ประเภท:").grid(row=1, column=0, padx=20, pady=10, sticky="e")
         self.type_seg_btn = ctk.CTkSegmentedButton(self, values=["รายจ่าย", "รายรับ"], command=self.update_category_list)
         self.type_seg_btn.set("รายจ่าย")
-        self.type_seg_btn.grid(row=0, column=1, padx=20, pady=10, sticky="ew")
+        self.type_seg_btn.grid(row=1, column=1, padx=20, pady=10, sticky="ew")
 
-        ctk.CTkLabel(self, text="รายการ:").grid(row=1, column=0, padx=20, pady=10, sticky="e")
+        ctk.CTkLabel(self, text="รายการ:").grid(row=2, column=0, padx=20, pady=10, sticky="e")
         self.desc_entry = ctk.CTkEntry(self, placeholder_text="ซื้ออะไร / รับจากไหน")
-        self.desc_entry.grid(row=1, column=1, padx=20, pady=10, sticky="ew")
+        self.desc_entry.grid(row=2, column=1, padx=20, pady=10, sticky="ew")
 
-        ctk.CTkLabel(self, text="หมวดหมู่:").grid(row=2, column=0, padx=20, pady=10, sticky="e")
+        ctk.CTkLabel(self, text="หมวดหมู่:").grid(row=3, column=0, padx=20, pady=10, sticky="e")
         self.cat_combo = ctk.CTkComboBox(self, values=list(self.expense_map.keys()))
-        self.cat_combo.grid(row=2, column=1, padx=20, pady=10, sticky="ew")
+        self.cat_combo.grid(row=3, column=1, padx=20, pady=10, sticky="ew")
 
-        ctk.CTkLabel(self, text="ช่องทางชำระเงิน:").grid(row=3, column=0, padx=20, pady=10, sticky="ne")
+        # --- Row 4: ช่องทางชำระเงิน (ขยับลงมา) ---
+        ctk.CTkLabel(self, text="ช่องทางชำระเงิน:").grid(row=4, column=0, padx=20, pady=10, sticky="ne")
         
         self.payments_container = ctk.CTkFrame(self, fg_color="transparent")
-        self.payments_container.grid(row=3, column=1, padx=20, pady=10, sticky="ew")
+        self.payments_container.grid(row=4, column=1, padx=20, pady=10, sticky="ew")
         
         self.btn_add_split = ctk.CTkButton(self, text="+ เพิ่มช่องทางชำระ", 
                                            fg_color="gray", command=self.add_payment_row)
-        self.btn_add_split.grid(row=4, column=1, padx=20, pady=0, sticky="w")
+        self.btn_add_split.grid(row=5, column=1, padx=20, pady=0, sticky="w")
 
         self.submit_btn = ctk.CTkButton(self, text="บันทึกรายการ", height=40, command=self.submit_data)
-        self.submit_btn.grid(row=5, column=0, columnspan=2, padx=20, pady=30, sticky="ew")
+        self.submit_btn.grid(row=6, column=0, columnspan=2, padx=20, pady=30, sticky="ew")
+        
         self.add_payment_row()
     def add_payment_row(self):
         row = PaymentRow(self.payments_container, account_map=self.accounts_map)
@@ -102,6 +109,9 @@ class TransactionFrame(ctk.CTkFrame):
         desc = self.desc_entry.get()
         if not desc: desc = transaction_type
 
+        selected_date = self.date_entry.get_date()
+        full_datetime = selected_date.strftime('%Y-%m-%d') + datetime.now().strftime(' %H:%M:%S')
+
         if transaction_type == "รายรับ":
             category_id = self.income_map.get(category_name)
             multiplier = 1
@@ -119,11 +129,11 @@ class TransactionFrame(ctk.CTkFrame):
                 has_data = True
                 final_desc = f"{desc} ({acc_name})" 
 
-                # บันทึก Transaction
                 db_func.addTransaction(description=final_desc, 
                                        category_id=category_id, 
                                        amount=amount, 
-                                       account_id=acc_id)
+                                       account_id=acc_id,
+                                       date_input=full_datetime)
                 
                 current_acc_data = db.getDB("Accounts", condition=f"account_id={acc_id}")
                 if current_acc_data:
@@ -138,6 +148,7 @@ class TransactionFrame(ctk.CTkFrame):
             self.update_view()
     def clear_inputs(self):
         self.desc_entry.delete(0, "end")
+        self.date_entry.set_date(datetime.now())
         for widget in self.payments_container.winfo_children():
             widget.destroy()
         self.payment_rows = []
