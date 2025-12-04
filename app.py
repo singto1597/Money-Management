@@ -50,7 +50,7 @@ class MoneyApp(ctk.CTk):
         self.add_page = add_page.AddPage(master=self)
         self.history_page = history_page.HistoryPage(master=self)
         self.summary_page = summary_page.SummaryPage(master=self)
-        self.debt_page = debt_page.DebtPage(master=self)
+        self.debt_page = debt_page.DebtPage(master=self, on_settle_callback=self.settle_debt_action)
         self.edit_page = edit_page.EditPage(master=self)
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -129,6 +129,14 @@ class MoneyApp(ctk.CTk):
     def open_github(self):
         """เปิดลิงค์ GitHub ใน Browser"""
         webbrowser.open("https://github.com/singto1597/Money-Management")
+    def settle_debt_action(self, from_acc, to_acc, amount):
+        """ฟังก์ชันนี้จะถูกเรียกเมื่อกดปุ่ม Settle ในหน้าหนี้สิน"""
+        self.select_button(self.btn_add)
+        self.hide_all_pages()
+
+        self.add_page.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+
+        self.add_page.switch_to_transfer_and_fill(from_acc, to_acc, amount)
 
 if __name__ == "__main__":
     print("Checking Database...")
