@@ -33,39 +33,56 @@ def addTransaction(description, category_id = None, amount = 0, account_id = Non
 
     valueWillInsert = (record_time, description, category_id, amount, account_id, transfer_group_id)
     db.insertInfoIntoTable(tableName, columnWillInsert, valueWillInsert)
-def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน"):
-    accounts_map_balance = { row["account_id"]: row["account_balance"] for row in db.getDB("Accounts") }
-    from_acc_balance = accounts_map_balance[from_acc_id]
-    to_acc_balance = accounts_map_balance[to_acc_id]
-    
-    raw_cat_out = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfer_from",))
-    if raw_cat_out:
-        CAT_OUT_ID = raw_cat_out[0]["category_id"]
-    else:
-        print("Error: ไม่พบหมวดโอนเงินออก!")
-        return
-    
-    raw_cat_in = db.getDB("Categories", condition="category_type = ?", conditionValues=("transfer_to",))
-    if raw_cat_in:
-        CAT_IN_ID = raw_cat_in[0]["category_id"]
-    else:
-        print("Error: ไม่พบหมวดรับเงินโอน!")
-        return
-    addTransaction(description = f"โอนไป {to_acc_id} ({desc})", 
-                   amount = amount, 
-                   category_id = CAT_OUT_ID,
-                   account_id = from_acc_id, 
-                   transfer_group_id = 0)
-    changeBalanceInAccount(balance = from_acc_balance - amount, 
-                           id = from_acc_id)
-    
-    addTransaction(description = f"ได้รับจาก {from_acc_id} ({desc})", 
-                   amount = amount, 
-                   account_id = to_acc_id, 
-                   category_id = CAT_IN_ID,
-                   transfer_group_id = 0)
-    changeBalanceInAccount(balance = to_acc_balance + amount, 
-                           id = to_acc_id)  
+def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน", date_input=None): # <--- รับ date_input เพิ่ม
+    conn = db.connectToDatabase()
+    cursor = conn.cursor()
+    try:
+        # 1. หาชื่อบัญชี จาก ID ที่ส่งมา
+        cursor.execute("SELECT account_name FROM Accounts WHERE account_id = ?", (from_acc_id,))
+        from_acc_name = cursor.fetchone()['account_name']
+        
+        cursor.execute("SELECT account_name FROM Accounts WHERE account_id = ?", (to_acc_id,))
+        to_acc_name = cursor.fetchone()['account_name']
+
+        # 2. หา ID หมวดหมู่ (แก้คำผิด transfrom เป็น transfer ให้แล้วนะครับ)
+        cursor.execute("SELECT category_id FROM Categories WHERE category_type='transfer_from'") # หรือ transfrom_from ตาม DB คุณ
+        cat_out_data = cursor.fetchone()
+        cat_out = cat_out_data['category_id'] if cat_out_data else None
+        
+        cursor.execute("SELECT category_id FROM Categories WHERE category_type='transfer_to'") # หรือ transfrom_to ตาม DB คุณ
+        cat_in_data = cursor.fetchone()
+        cat_in = cat_in_data['category_id'] if cat_in_data else None
+
+        # 3. กำหนดวันที่ (ถ้าไม่ส่งมา ให้ใช้วันปัจจุบัน)
+        record_time = date_input if date_input else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # 4. บันทึก Transaction (ใช้ชื่อบัญชีใน Description แล้ว!)
+        # ขาออก
+        cursor.execute("""
+            INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id) 
+            VALUES (?, ?, ?, ?, ?)""",
+            (record_time, f"โอนไป {to_acc_name} ({desc})", cat_out, -amount, from_acc_id)) # สังเกต amount ติดลบ
+        
+        # ตัดเงินต้นทาง
+        cursor.execute("UPDATE Accounts SET account_balance = account_balance - ? WHERE account_id = ?", (amount, from_acc_id))
+
+        # ขาเข้า
+        cursor.execute("""
+            INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id) 
+            VALUES (?, ?, ?, ?, ?)""",
+            (record_time, f"ได้รับจาก {from_acc_name} ({desc})", cat_in, amount, to_acc_id)) # amount บวก
+        
+        # เพิ่มเงินปลายทาง
+        cursor.execute("UPDATE Accounts SET account_balance = account_balance + ? WHERE account_id = ?", (amount, to_acc_id))
+
+        conn.commit()
+        print(f"Transfer Success: {from_acc_name} -> {to_acc_name} ({amount})")
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Transfer Failed: {e}")
+    finally:
+        conn.close()
 def getTransactionsByDateRange(start_date_str, end_date_str, account_id = None):
     # start_date_str: "2023-11-20"
     # end_date_str: "2023-11-26"
@@ -204,7 +221,6 @@ def getExpenseBreakdown():
         return []
     finally:
         conn.close()
-
 def getAllAccountBalances():
     """ดึงข้อมูลบัญชีและยอดเงินล่าสุด"""
     accounts = db.getDB("Accounts")
