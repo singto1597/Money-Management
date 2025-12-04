@@ -3,3 +3,4 @@ matplotlib
 pillow
 darkdetect
 packaging
+tkcalendar
