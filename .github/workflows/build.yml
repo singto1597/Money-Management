@@ -1,14 +1,22 @@
-name: Build Windows EXE
+name: Build and Release
 
+# ทำงานเมื่อมีการ Push Tag ที่ขึ้นต้นด้วย v (เช่น v1.0, v1.0.1)
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: windows-latest
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # สั่งให้รันบนทั้ง Windows และ Linux (Ubuntu)
+        os: [windows-latest, ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -16,7 +24,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12' 
+        python-version: '3.12'
         cache: 'pip'
 
     - name: Install Dependencies
@@ -24,12 +32,38 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: Build EXE
+    # --- ส่วนของ Windows ---
+    - name: Build EXE (Windows)
+      if: runner.os == 'Windows'
       run: |
+        # ใช้ ; คั่น path
         pyinstaller --noconfirm --onefile --windowed --name "MoneyManager" --add-data "config;config" app.py
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+    # --- ส่วนของ Linux ---
+    - name: Build Binary (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        # ใช้ : คั่น path
+        pyinstaller --noconfirm --onefile --windowed --name "MoneyManager" --add-data "config:config" app.py
+
+    # --- แพ็คของเตรียมส่ง (Windows) ---
+    - name: Zip Artifact (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        powershell Compress-Archive -Path dist/MoneyManager.exe -DestinationPath MoneyManager-Windows.zip
+
+    # --- แพ็คของเตรียมส่ง (Linux) ---
+    - name: Zip Artifact (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd dist
+        zip -r ../MoneyManager-Linux.zip MoneyManager
+
+    # --- อัปโหลดขึ้นหน้า Releases ---
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: MoneyManager-Windows
-        path: dist/MoneyManager.exe
+        files: |
+          MoneyManager-Windows.zip
+          MoneyManager-Linux.zip
