@@ -5,9 +5,24 @@ import db_function as db_func
 import customtkinter as ctk
 import db
 import db_function as db_func
+from tkinter import ttk
 
 from tkcalendar import DateEntry
 from datetime import datetime
+
+def apply_date_entry_style():
+    """สร้าง Style สำหรับ DateEntry ให้เป็น Dark Mode"""
+    style = ttk.Style()
+    if 'clam' in style.theme_names():
+        style.theme_use('clam')
+    
+    # ตั้งค่าสีของช่องกรอกวันที่ (Entry) และปุ่มลูกศร
+    style.configure('my.DateEntry',
+                    fieldbackground='#343638', # สีพื้นหลังช่องกรอก (เทาเข้ม)
+                    background='#343638',      # สีพื้นหลังปุ่มลูกศร
+                    foreground='white',        # สีตัวอักษร
+                    arrowcolor='white',        # สีลูกศร
+                    borderwidth=0)             # ขอบบางๆ
 
 class PaymentRow(ctk.CTkFrame):
     def __init__(self, master, account_map, default_amount="", **kwargs):
@@ -44,6 +59,7 @@ class PaymentRow(ctk.CTkFrame):
 class TransactionFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        apply_date_entry_style()
 
         self.accounts_map = { row["account_name"]: row["account_id"] for row in db.getDB("Accounts") }
         raw_income = db.getDB("Categories", condition="category_type = ?", conditionValues=("income",))
@@ -58,8 +74,20 @@ class TransactionFrame(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1) 
 
         ctk.CTkLabel(self, text="วันที่:").grid(row=0, column=0, padx=20, pady=10, sticky="e")
-        self.date_entry = DateEntry(self, width=12, background='darkblue',
-                                    foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+        self.date_entry = DateEntry(self, width=12, 
+                                    style='my.DateEntry', # ใช้ Style ที่เราสร้าง
+                                    background='#1F6AA5', # สีหัวปฏิทิน (น้ำเงิน CTk)
+                                    foreground='white',   # สีตัวอักษรหัว
+                                    borderwidth=2,
+                                    date_pattern='yyyy-mm-dd',
+                                    # --- สีปฏิทินข้างใน ---
+                                    selectbackground='#1F6AA5', # วันที่ถูกเลือก
+                                    normalbackground='#2B2B2B', # พื้นหลังวันธรรมดา (เทาดำ)
+                                    normalforeground='white',   # ตัวอักษรวันธรรมดา
+                                    weekendbackground='#2B2B2B',# พื้นหลังวันหยุด
+                                    weekendforeground='#FF6B6B',# ตัวอักษรวันหยุด (แดงอ่อน)
+                                    headersbackground='#202020',# แถบชื่อวัน (Mon, Tue)
+                                    headersforeground='white')
         self.date_entry.grid(row=0, column=1, padx=20, pady=10, sticky="w")
 
         
@@ -163,6 +191,7 @@ class TransactionFrame(ctk.CTkFrame):
 class TransferFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        apply_date_entry_style()
         self.accounts_map = {row["account_name"]: row["account_id"] for row in db.getDB("Accounts")}
         self.accounts_map_balance = { row["account_name"]: row["account_balance"] for row in db.getDB("Accounts") }
         acc_names = list(self.accounts_map.keys())
@@ -173,9 +202,20 @@ class TransferFrame(ctk.CTkFrame):
         self.lbl_date = ctk.CTkLabel(self, text="วันที่:")
         self.lbl_date.grid(row=0, column=0, padx=20, pady=10, sticky="e")
         
-        # DateEntry เป็น Widget ของ tkcalendar (ไม่ใช่ ctk) แต่ใช้ร่วมกันได้
-        self.date_entry = DateEntry(self, width=12, background='darkblue',
-                                    foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+        
+        self.date_entry = DateEntry(self, width=12, 
+                                    style='my.DateEntry', # ใช้ Style
+                                    background='#1F6AA5',
+                                    foreground='white',
+                                    borderwidth=2,
+                                    date_pattern='yyyy-mm-dd',
+                                    selectbackground='#1F6AA5',
+                                    normalbackground='#2B2B2B',
+                                    normalforeground='white',
+                                    weekendbackground='#2B2B2B',
+                                    weekendforeground='#FF6B6B',
+                                    headersbackground='#202020',
+                                    headersforeground='white')
         self.date_entry.grid(row=0, column=1, padx=20, pady=10, sticky="w")
 
         # --- แถว 1: จากกระเป๋า ---
