@@ -73,11 +73,6 @@ def transferMoney(amount, from_acc_id, to_acc_id, desc="โอนเงิน", 
         new_group_id = last_group_id + 1
 
         cursor.execute("""
-            INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id) 
-            VALUES (?, ?, ?, ?, ?)""",
-            (record_time, f"โอนไป {to_acc_name} ({desc})", cat_out, -amount, from_acc_id)) # สังเกต amount ติดลบ
-        
-        cursor.execute("""
             INSERT INTO Transactions (transaction_date, description, category_id, amount, account_id, transfer_group_id) 
             VALUES (?, ?, ?, ?, ?, ?)""",
             (record_time, f"โอนไป {to_acc_name} ({desc})", cat_out, -amount, from_acc_id, new_group_id))
